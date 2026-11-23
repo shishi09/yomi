@@ -1,0 +1,29 @@
+# Secrets & local env
+.env
+.env.*
+!.env.example
+
+# Runtime data & caches
+cache/
+server.pid
+*.log
+
+# Personal glossaries (keep shipped examples)
+glossaries/*.json
+!glossaries/examples/*.json
+
+# Build outputs & compiled binaries
+dist/
+ocr/vision_ocr
+ocr/annotate_som
+*.zip
+*.dmg
+
+# Python & macOS/IDE junk
+__pycache__/
+*.py[cod]
+**/.DS_Store
+.vscode/
+.idea/
+*.swp
+*.xcuserstate

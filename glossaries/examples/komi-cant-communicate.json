@@ -1,0 +1,83 @@
+{
+  "slug": "komi-cant-communicate",
+  "title": "Komi cherche ses mots (Komi Can't Communicate)",
+  "match_keywords": [
+    "komi",
+    "komi-san",
+    "komi-can-t-communicate",
+    "komi-cherche-ses-mots"
+  ],
+  "characters": [
+    {
+      "name": "Shôko Komi",
+      "gender": "F",
+      "notes": "Héroïne très timide/muette (communique par carnet ou murmures). Tutoie Tadano, Najimi et sa famille ; vouvoie les inconnus."
+    },
+    {
+      "name": "Hitohito Tadano",
+      "gender": "M",
+      "notes": "Lycéen gentil et attentif. Masculin (« pensé-t-il » quand narré au masculin). Tutoie Komi, Najimi et Katai."
+    },
+    {
+      "name": "Najimi Osana",
+      "gender": "NB",
+      "notes": "Ami(e) d'enfance extraverti(e) et taquin(e). Ton familier, tutoie tout le monde."
+    },
+    {
+      "name": "Shôsuke Komi",
+      "gender": "M",
+      "notes": "Petit frère de Shôko, laconique et stoïque. Masculin."
+    },
+    {
+      "name": "Shûko Komi",
+      "gender": "F",
+      "notes": "Mère de Shôko, très joyeuse et bavarde. Féminin, tutoie sa famille (« ma chérie »)."
+    },
+    {
+      "name": "Masayoshi Komi",
+      "gender": "M",
+      "notes": "Père de Shôko, calme et silencieux. Masculin."
+    },
+    {
+      "name": "Makoto Katai",
+      "gender": "M",
+      "notes": "Grand garçon musclé mais très timide. Masculin, poli avec ses camarades."
+    },
+    {
+      "name": "Ai Katai",
+      "gender": "F",
+      "notes": "Petite sœur de Makoto, look de délinquante, protectrice avec son frère (« cheffe »). Féminin."
+    },
+    {
+      "name": "Rumiko Manbagi",
+      "gender": "F",
+      "notes": "Gyaru expressive et chaleureuse, amie proche de Komi. Féminin, ton oral vif."
+    },
+    {
+      "name": "Ren Yamai",
+      "gender": "F",
+      "notes": "Admiratrice excessive de Komi. Féminin."
+    },
+    {
+      "name": "Himiko Agari",
+      "gender": "F",
+      "notes": "Anxieuse et timide. Féminin."
+    },
+    {
+      "name": "Shisuto Naruse",
+      "gender": "M",
+      "notes": "Narcissique théâtral. Masculin."
+    },
+    {
+      "name": "Chûsaku Kometani",
+      "gender": "M",
+      "notes": "Commentateur pince-sans-rire. Masculin."
+    }
+  ],
+  "terms": {
+    "Golden Week": "Golden Week",
+    "Comm.": "Chap.",
+    "Hard liner": "Puriste"
+  },
+  "style_notes": "Tutoiement naturel entre lycéens/amis et en famille ; vouvoiement envers les adultes/inconnus. Respecter strictement les pronoms HE (il) / SHE (elle) dans la narration (ex. « SHE THOUGHT » -> « pensa-t-elle »). Supprimer -san/-kun/-chan quand c'est plus fluide en français."
+}
