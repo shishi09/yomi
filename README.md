@@ -39,6 +39,16 @@
 
 ---
 
+## Download & Install (Recommended)
+
+1. Download **`Yomi-2.1.0-macOS-arm64.dmg`** from the [Releases](../../releases) page.
+2. Open the `.dmg` and drag **`Yomi.app`** into **`Applications`**.
+3. Launch **Yomi** from `/Applications` and follow the 5-step guided setup.
+
+> **First launch notice:** Builds distributed without a paid Apple Developer ID are ad-hoc signed. If macOS prevents opening on first launch, click **Open Anyway** in **System Settings → Privacy & Security**, or run `xattr -cr "/Applications/Yomi.app"` once.
+
+---
+
 ## Build & Run from Source
 
 ```bash
@@ -50,12 +60,13 @@ open "/Applications/Yomi.app"
 
 *Requires Xcode Command Line Tools (`xcode-select --install`) only when building the Swift binaries from source. Once built, Python 3, Ollama, models, and browser userscripts can all be set up directly inside `Yomi.app`.*
 
-### Packaging a Release (`.zip`)
+### Packaging a Release (`.dmg`)
 
 ```bash
-./scripts/build_app.sh
-ditto -c -k --sequesterRsrc --keepParent dist/Yomi.app dist/Yomi-macOS-arm64.zip
+./scripts/build_dmg.sh
 ```
+
+Builds `dist/Yomi-2.1.0-macOS-arm64.dmg` with drag-to-Applications layout ready to attach to a GitHub Release.
 
 ---
 
@@ -64,7 +75,7 @@ ditto -c -k --sequesterRsrc --keepParent dist/Yomi.app dist/Yomi-macOS-arm64.zip
 - `app/` — Native Swift/AppKit shell (`MangaTranslatorApp.swift`) & embedded WebKit UI (`ui/app.html`)
 - `ocr/` — Apple Vision OCR (`vision_ocr.swift`) & Set-of-Mark box annotation (`annotate_som.swift`)
 - `userscript/` — Browser overlay & frosted popover script (`yomi.user.js`) for Safari / Chrome / Arc / Firefox / Brave
-- `scripts/` — Universal Apple Silicon app bundler (`build_app.sh`) & Washi pixel-cat icon generator (`generate_icon.py`)
+- `scripts/` — Apple Silicon app bundler (`build_app.sh`), `.dmg` installer packager (`build_dmg.sh`), & Washi pixel-cat icon generator (`generate_icon.py`)
 - `glossaries/examples/` — Built-in series glossary examples copied into `Application Support`
 - `server.py` — Local translation HTTP server (Apple Vision + Ollama Gemma 4 + Gemini API fallback)
 
@@ -99,8 +110,9 @@ ditto -c -k --sequesterRsrc --keepParent dist/Yomi.app dist/Yomi-macOS-arm64.zip
 
 ## En français (utilisation rapide)
 
-1. Compile et installe l'app avec `./scripts/build_app.sh --install`, puis ouvre **`Yomi.app`** dans `/Applications`.
-2. Suis l'assistant en 5 étapes :
+1. Télécharge **`Yomi-2.1.0-macOS-arm64.dmg`** dans **Releases**, ouvre-le et glisse **`Yomi.app`** dans **Applications** *(ou compile depuis les sources avec `./scripts/build_app.sh --install`)*.
+   - *Premier lancement :* comme l’application est signée localement sans certificat Apple Developer payant, clique sur **Ouvrir quand même** dans *Réglages Système → Confidentialité et sécurité* (ou exécute `xattr -cr "/Applications/Yomi.app"` une seule fois) si macOS bloque l’ouverture.
+2. Ouvre **`Yomi.app`** et suis l'assistant en 5 étapes :
    - Choisis ton compagnon chat (**Mochi**, **Kuro** ou **Sakura**) et le thème (**Clair / Sombre / Système**).
    - Choisis ton moteur (**100 % Local Ollama**, **API Gemini**, ou **les deux**).
    - L'app détecte ta puce Apple Silicon + RAM, installe en 1 clic ce qui manque (**Python 3**, **Ollama**) et pré-sélectionne le modèle Gemma 4 adapté à ton Mac.
