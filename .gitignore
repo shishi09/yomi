@@ -14,6 +14,10 @@ glossaries/*.json
 
 # Build outputs & compiled binaries
 dist/
+node_modules/
+src-tauri/target/
+src-tauri/resources/vision_ocr
+src-tauri/gen/
 ocr/vision_ocr
 ocr/annotate_som
 *.zip

@@ -1,0 +1,13 @@
+{
+  "name": "yomi",
+  "version": "3.0.0",
+  "private": true,
+  "description": "Cross-platform manga translator & visual Studio (Rust + Tauri v2)",
+  "scripts": {
+    "tauri": "tauri",
+    "build:mac": "./scripts/build_app.sh"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.2.0"
+  }
+}

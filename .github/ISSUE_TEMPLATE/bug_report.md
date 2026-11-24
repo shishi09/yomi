@@ -16,11 +16,11 @@ Steps to reproduce the behavior:
 3. See error
 
 **Environment (please complete the following):**
-- Apple Silicon Chip: [e.g. M1 / M2 / M3 / M4 / M5]
-- Unified Memory: [e.g. 8 GB / 16 GB / 24 GB]
-- macOS Version: [e.g. 15.x / 26.x]
+- OS & Architecture: [e.g. macOS arm64 / Windows 11 x64 / Ubuntu 24.04]
+- Chip / CPU & RAM: [e.g. Apple M3 · 16 GB / Ryzen 7 · 16 GB]
+- OCR Engine: [Apple Vision / Windows OCR / Tesseract]
 - Browser + Userscript Manager (if browser issue): [e.g. Safari + Userscripts / Chrome + Tampermonkey]
 - Translation Engine & Model: [e.g. Ollama `gemma4:12b` / Gemini / OpenAI / Claude / OpenRouter / Custom]
 
 **Logs / Output (if applicable)**
-If helpful, attach redacted output from `"/Applications/Yomi.app/Contents/MacOS/Yomi" --self-test` or console logs (make sure no API keys or personal paths are included).
+If helpful, attach redacted `--self-test` output or console logs (make sure no API keys or personal paths are included).

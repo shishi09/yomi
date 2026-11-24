@@ -2060,6 +2060,9 @@
   const pendingBridge = new Map();
   let bridgeSeq = 0;
   function callBridge(action, payload = {}) {
+    if (window.__TAURI__ && window.__TAURI__.core && typeof window.__TAURI__.core.invoke === "function") {
+      return window.__TAURI__.core.invoke("bridge_call", { action, payload });
+    }
     const id = String(++bridgeSeq);
     return new Promise((resolve, reject) => {
       pendingBridge.set(id, { resolve, reject });
@@ -2874,9 +2877,34 @@
   function sectionMacToolsHtml() {
     const py = sysState.python || {};
     const ol = sysState.ollama || {};
+    const isNativeCore = !!sysState.native_core;
     const olBtnTxt = !ol.installed ? tr("install_btn") : (!ol.running ? tr("start_btn") : "");
+    const hwTitle = (sysState.platform && sysState.platform !== "macos")
+      ? (uiLang === "en" ? "Your Computer" : "Votre ordinateur")
+      : tr("sec_mac");
+    const ocrTitle = sysState.ocr_engine ? `${escHtml(sysState.ocr_engine)} OCR` : tr("lbl_ocr");
+    const coreRowHtml = isNativeCore
+      ? `
+        <div class="group-row">
+          <div class="row-left">
+            <div class="row-title">${uiLang === "en" ? "Rust Native Engine" : "Moteur natif Rust"} <span class="badge ok">${tr("ready")}</span></div>
+            <div class="row-sub">${uiLang === "en" ? "Compiled HTTP server & image processor built in (zero Python required)." : "Serveur HTTP compilé et traitement d'image intégrés (zéro Python requis)."}</div>
+          </div>
+        </div>
+      `
+      : `
+        <div class="group-row">
+          <div class="row-left">
+            <div class="row-title">${tr("lbl_py")} <span class="badge ${py.installed ? "ok" : "warn"}">${py.installed ? tr("ready") : tr("missing")}</span></div>
+            <div class="row-sub">${py.installed ? tr("py_ok")(py.path, py.version) : tr("py_miss")}</div>
+          </div>
+          ${!py.installed ? `<div class="row-right"><button id="btn-inst-py" class="pill-btn blue">${tr("install_btn")}</button></div>` : ""}
+        </div>
+        ${progHtml("python")}
+      `;
+
     return `
-      <div class="sec-title">${tr("sec_mac")}</div>
+      <div class="sec-title">${hwTitle}</div>
       <div class="group-card">
         <div class="group-row">
           <div class="row-left"><div class="row-title">${tr("lbl_chip")}</div></div>
@@ -2896,18 +2924,11 @@
       <div class="group-card">
         <div class="group-row">
           <div class="row-left">
-            <div class="row-title">${tr("lbl_ocr")} <span class="badge ${sysState.ocr_ready ? "ok" : "warn"}">${sysState.ocr_ready ? tr("ready") : tr("missing")}</span></div>
+            <div class="row-title">${ocrTitle} <span class="badge ${sysState.ocr_ready ? "ok" : "warn"}">${sysState.ocr_ready ? tr("ready") : tr("missing")}</span></div>
             <div class="row-sub">${tr("lbl_ocr_sub")}</div>
           </div>
         </div>
-        <div class="group-row">
-          <div class="row-left">
-            <div class="row-title">${tr("lbl_py")} <span class="badge ${py.installed ? "ok" : "warn"}">${py.installed ? tr("ready") : tr("missing")}</span></div>
-            <div class="row-sub">${py.installed ? tr("py_ok")(py.path, py.version) : tr("py_miss")}</div>
-          </div>
-          ${!py.installed ? `<div class="row-right"><button id="btn-inst-py" class="pill-btn blue">${tr("install_btn")}</button></div>` : ""}
-        </div>
-        ${progHtml("python")}
+        ${coreRowHtml}
         <div class="group-row">
           <div class="row-left">
             <div class="row-title">${tr("lbl_ol")} <span class="badge ${ol.running ? "ok" : "warn"}">${ol.installed ? (ol.running ? tr("ready") : tr("stopped")) : tr("missing")}</span></div>
@@ -3090,6 +3111,7 @@
   }
 
   function sectionBrowserHtml() {
+    const isMac = !sysState.platform || sysState.platform === "macos";
     const us = sysState.userscripts || {};
     const safBadge = us.script_installed
       ? `<span class="badge ok">${tr("installed")} ✓</span>`
@@ -3102,6 +3124,7 @@
     const safDesc = us.detected_dir ? tr("br_saf_2") : (!us.app_installed ? tr("br_saf_need_app") : tr("safari_sub"));
 
     return `
+      ${isMac ? `
       <div class="sec-title">${tr("sec_safari")}</div>
       <div class="group-card">
         <div class="group-row">
@@ -3116,6 +3139,7 @@
           </div>
         </div>
       </div>
+      ` : ""}
 
       <div class="sec-title">${tr("sec_other_br")}</div>
       <div class="group-card">
@@ -3208,15 +3232,16 @@
     if (wizardStep === 3) {
       const showLocal = form.engine_mode !== "api";
       const showApi = form.engine_mode !== "local";
-      const pyOk = !!(sysState.python && sysState.python.installed);
+      const isNativeCore = !!sysState.native_core;
+      const pyOk = isNativeCore || !!(sysState.python && sysState.python.installed);
       const ol = sysState.ollama || {};
       const olOk = !!(ol.installed && ol.running);
-      const needsTool = !pyOk || (showLocal && !olOk);
+      const needsTool = (!isNativeCore && !pyOk) || (showLocal && !olOk);
       const keyPh = sysState.config?.has_api_key ? tr("ph_api_saved") : tr("ph_api");
 
       const t2Title = form.engine_mode === "api" ? tr("wiz_t2_api") : (form.engine_mode === "both" ? tr("wiz_t2_both") : tr("wiz_t2_local"));
       const t2Sub = form.engine_mode === "api" ? tr("wiz_s2_api") : (form.engine_mode === "both" ? tr("wiz_s2_both") : tr("wiz_s2_local"));
-      const spinning = Boolean(isBusy || progressState.pull || progressState.python || (showLocal && progressState.ollama));
+      const spinning = Boolean(isBusy || progressState.pull || (!isNativeCore && progressState.python) || (showLocal && progressState.ollama));
 
       const modelRows = LOCAL_MODELS.slice(0, 3).map((m) => {
         const inst = hasOllamaModel(m.id);
@@ -3246,13 +3271,13 @@
           <div class="diag-strip" style="margin-bottom:10px">
             <span class="diag-hw">${sysState.chip} · ${sysState.ram_gb} Go</span>
             <div class="diag-pills">
-              <span class="tool-pill ${sysState.ocr_ready ? "ok" : "warn"}">Vision OCR ${sysState.ocr_ready ? "✓" : "!"}</span>
-              <span class="tool-pill ${pyOk ? "ok" : "warn"}">Python ${pyOk ? "✓" : "!"}</span>
+              <span class="tool-pill ${sysState.ocr_ready ? "ok" : "warn"}">${escHtml(sysState.ocr_engine || "Vision OCR")} ${sysState.ocr_ready ? "✓" : "!"}</span>
+              <span class="tool-pill ${pyOk ? "ok" : "warn"}">${isNativeCore ? (uiLang === "en" ? "Rust Core ✓" : "Cœur Rust ✓") : `Python ${pyOk ? "✓" : "!"}`}</span>
               ${showLocal ? `<span class="tool-pill ${olOk ? "ok" : "warn"}">Ollama ${olOk ? "✓" : "!"}</span>` : ""}
               ${needsTool ? `<button id="btn-auto-tools" class="pill-btn blue">${tr("diag_auto_install")}</button>` : ""}
             </div>
           </div>
-          ${progHtml("python")}${showLocal ? progHtml("ollama") : ""}
+          ${!isNativeCore ? progHtml("python") : ""}${showLocal ? progHtml("ollama") : ""}
           ${showLocal ? `<div class="group-card">${modelRows}${progHtml("pull")}</div>` : ""}
           ${showApi ? sectionCloudApiCardHtml(true) : ""}
         </div>
@@ -4841,10 +4866,11 @@
       "3. See error",
       "",
       "**Environment**",
-      "- Yomi Version: 2.1.0",
-      `- Apple Silicon Chip: ${sysState ? (sysState.chip || "") : ""}`,
-      `- Unified Memory: ${sysState ? (sysState.ram_gb || "") : ""} GB`,
-      `- macOS Version: ${sysState ? (sysState.macos || "") : ""}`,
+      "- Yomi Version: 3.0.0",
+      `- Chip / CPU: ${sysState ? (sysState.chip || "") : ""}`,
+      `- Unified Memory / RAM: ${sysState ? (sysState.ram_gb || "") : ""} GB`,
+      `- OS: ${sysState ? (sysState.os_name || sysState.macos || "") : ""}`,
+      `- OCR Engine: ${sysState ? (sysState.ocr_engine || "Apple Vision") : "Apple Vision"}`,
       `- Translation Engine & Model: ${engineSummary}`,
     ].join("\n");
     return `${YOMI_REPO_URL}/issues/new?labels=bug&title=${encodeURIComponent("[Bug]: ")}&body=${encodeURIComponent(body)}`;
@@ -4967,20 +4993,29 @@
           </div>
         `;
       } else if (settingsTab === "about") {
+        const platLabel = sysState.platform === "macos"
+          ? "macOS · Rust + Tauri"
+          : (sysState.platform === "windows"
+              ? "Windows · Rust + Tauri"
+              : (sysState.platform === "linux" ? "Linux · Rust + Tauri" : "Rust + Tauri"));
         settingsHtml += `
           <div class="sec-title">${tr("sec_sys")}</div>
           <div class="group-card">
             <div class="group-row">
               <div class="row-left"><div class="row-title">Yomi</div></div>
-              <div class="row-right"><span style="color:var(--muted)">${tr("ver")} 2.1.0 (Apple Silicon)</span></div>
+              <div class="row-right"><span style="color:var(--muted)">${tr("ver")} 3.0.0 (${platLabel})</span></div>
             </div>
             <div class="group-row">
               <div class="row-left"><div class="row-title">${tr("lbl_chip")}</div></div>
               <div class="row-right"><span style="color:var(--muted)">${sysState.chip} · ${sysState.ram_gb} Go</span></div>
             </div>
             <div class="group-row">
-              <div class="row-left"><div class="row-title">macOS</div></div>
-              <div class="row-right"><span style="color:var(--muted)">${sysState.macos}</span></div>
+              <div class="row-left"><div class="row-title">OCR</div></div>
+              <div class="row-right"><span style="color:var(--muted)">${escHtml(sysState.ocr_engine || "Apple Vision")}</span></div>
+            </div>
+            <div class="group-row">
+              <div class="row-left"><div class="row-title">${sysState.os_name ? "OS" : "macOS"}</div></div>
+              <div class="row-right"><span style="color:var(--muted)">${sysState.os_name || sysState.macos || ""}</span></div>
             </div>
             <div class="group-row">
               <div class="row-left"><div class="row-title">Data</div></div>
@@ -5892,8 +5927,14 @@
   });
 
   // Init
+  if (window.__TAURI__ && window.__TAURI__.event && typeof window.__TAURI__.event.listen === "function") {
+    window.__TAURI__.event.listen("yomi-bridge", (ev) => {
+      if (window.__smtBridgeEvent && ev && ev.payload) window.__smtBridgeEvent(ev.payload);
+    });
+  }
   callBridge("getState").then((s) => {
     sysState = s;
+    if (s.platform && s.platform !== "macos") wizardBrowserTab = "other";
     const cfg = s.config || {};
     uiLang = cfg.ui_lang === "en" ? "en" : "fr";
     applyTheme(cfg.theme || "system");

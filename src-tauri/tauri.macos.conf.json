@@ -1,0 +1,9 @@
+{
+  "bundle": {
+    "resources": [
+      "../userscript/yomi.user.js",
+      "../glossaries/examples",
+      "resources/vision_ocr"
+    ]
+  }
+}

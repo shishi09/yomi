@@ -16,9 +16,9 @@ if [[ "${1:-}" != "--skip-build" || ! -d "$APP_DIR" ]]; then
   "$ROOT_DIR/scripts/build_app.sh"
 fi
 
-VERSION="2.1.0"
+VERSION="3.0.0"
 if [[ -f "$PLIST_PATH" ]] && command -v /usr/libexec/PlistBuddy >/dev/null 2>&1; then
-  VERSION="$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PLIST_PATH" 2>/dev/null || echo "2.1.0")"
+  VERSION="$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PLIST_PATH" 2>/dev/null || echo "3.0.0")"
 fi
 
 VOL_NAME="Yomi"
@@ -51,7 +51,9 @@ echo "==> Staging Yomi.app and Applications link..."
 ditto "$APP_DIR" "$STAGE_DIR/Yomi.app"
 ln -s /Applications "$STAGE_DIR/Applications"
 
-if [[ -f "$APP_DIR/Contents/Resources/AppIcon.icns" ]]; then
+if [[ -f "$APP_DIR/Contents/Resources/icon.icns" ]]; then
+  cp "$APP_DIR/Contents/Resources/icon.icns" "$STAGE_DIR/.VolumeIcon.icns"
+elif [[ -f "$APP_DIR/Contents/Resources/AppIcon.icns" ]]; then
   cp "$APP_DIR/Contents/Resources/AppIcon.icns" "$STAGE_DIR/.VolumeIcon.icns"
 fi
 

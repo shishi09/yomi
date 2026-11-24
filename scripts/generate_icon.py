@@ -82,7 +82,33 @@ def blend_pixel(buf: bytearray, idx: int, sr: int, sg: int, sb: int, sa: int) ->
     buf[idx + 3] = out_a
 
 
-def render_icon_png(png_path: str, size: int = 1024) -> None:
+def _write_png_from_rgba(png_path: str, width: int, height: int, rgba: bytearray | bytes) -> None:
+    write_png(png_path, width, height, rgba)
+
+
+def _downsample_half(rgba: bytes | bytearray, size: int) -> bytearray:
+    half = size // 2
+    out = bytearray(half * half * 4)
+    for y in range(half):
+        y0 = y * 2
+        row0 = y0 * size * 4
+        row1 = (y0 + 1) * size * 4
+        dst_row = y * half * 4
+        for x in range(half):
+            x0 = x * 8
+            i0 = row0 + x0
+            i1 = i0 + 4
+            i2 = row1 + x0
+            i3 = i2 + 4
+            d = dst_row + x * 4
+            out[d] = (rgba[i0] + rgba[i1] + rgba[i2] + rgba[i3]) >> 2
+            out[d + 1] = (rgba[i0 + 1] + rgba[i1 + 1] + rgba[i2 + 1] + rgba[i3 + 1]) >> 2
+            out[d + 2] = (rgba[i0 + 2] + rgba[i1 + 2] + rgba[i2 + 2] + rgba[i3 + 2]) >> 2
+            out[d + 3] = (rgba[i0 + 3] + rgba[i1 + 3] + rgba[i2 + 3] + rgba[i3 + 3]) >> 2
+    return out
+
+
+def render_icon_rgba(size: int = 1024) -> bytearray:
     """Render a 1024x1024 macOS squircle background + crisp integer-scaled pixel cat."""
     for row in CAT_GRID:
         assert len(row) == 16, f"Expected 16 cols, got {len(row)} in {row!r}"
@@ -171,17 +197,88 @@ def render_icon_png(png_path: str, size: int = 1024) -> None:
                     buf[idx + 2] = col[2]
                     buf[idx + 3] = col[3]
 
+    return buf
+
+
+def render_icon_png(png_path: str, size: int = 1024) -> None:
+    buf = render_icon_rgba(size)
     write_png(png_path, size, size, buf)
 
 
-def build_icns(out_icns: str) -> None:
+def write_tray_png(png_path: str) -> None:
+    """Render a 36x36 crisp pixel-art cat silhouette for menu bar / system tray."""
+    grid = [
+        "..##........##..",
+        ".####.####.####.",
+        ".##############.",
+        ".##############.",
+        ".###..####..###.",
+        ".###..####..###.",
+        ".##############.",
+        ".##############.",
+        "..############..",
+        "..###########.#.",
+        "..#############.",
+        "..############..",
+        "..####....####..",
+        "...##......##...",
+    ]
+    w, h, scale = 36, 36, 2
+    ox = (w - 16 * scale) // 2
+    oy = (h - 14 * scale) // 2
+    buf = bytearray(w * h * 4)
+    col = (245, 206, 117, 255)  # Jaune beurre; alpha mask used for macOS template mode
+    for gy, row in enumerate(grid):
+        for gx, ch in enumerate(row):
+            if ch != "#":
+                continue
+            for dy in range(scale):
+                for dx in range(scale):
+                    px = ox + gx * scale + dx
+                    py = oy + gy * scale + dy
+                    idx = (py * w + px) * 4
+                    buf[idx] = col[0]
+                    buf[idx + 1] = col[1]
+                    buf[idx + 2] = col[2]
+                    buf[idx + 3] = col[3]
+    write_png(png_path, w, h, buf)
+
+
+def write_ico(ico_path: str, png_entries: list[tuple[int, bytes]]) -> None:
+    """Write a multi-resolution Windows .ico wrapping PNG images."""
+    header = struct.pack("<HHH", 0, 1, len(png_entries))
+    offset = 6 + 16 * len(png_entries)
+    dir_bytes = bytearray()
+    payload = bytearray()
+    for sz, raw in png_entries:
+        dim = 0 if sz >= 256 else sz
+        dir_bytes.extend(struct.pack("<BBBBHHII", dim, dim, 0, 0, 1, 32, len(raw), offset))
+        payload.extend(raw)
+        offset += len(raw)
+    with open(ico_path, "wb") as fh:
+        fh.write(header)
+        fh.write(dir_bytes)
+        fh.write(payload)
+
+
+def build_icns(out_icns: str, master_buf: bytearray | None = None) -> None:
     os.makedirs(os.path.dirname(os.path.abspath(out_icns)), exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="smt_icon_") as tmpdir:
         master_png = os.path.join(tmpdir, "icon_1024.png")
         iconset_dir = os.path.join(tmpdir, "AppIcon.iconset")
         os.makedirs(iconset_dir, exist_ok=True)
 
-        render_icon_png(master_png, 1024)
+        if master_buf is None:
+            master_buf = render_icon_rgba(1024)
+        write_png(master_png, 1024, 1024, master_buf)
+
+        b512 = _downsample_half(master_buf, 1024)
+        b256 = _downsample_half(b512, 512)
+        b128 = _downsample_half(b256, 256)
+        b64 = _downsample_half(b128, 128)
+        b32 = _downsample_half(b64, 64)
+        b16 = _downsample_half(b32, 32)
+        by_size = {16: b16, 32: b32, 64: b64, 128: b128, 256: b256, 512: b512, 1024: master_buf}
 
         specs = [
             ("icon_16x16.png", 16),
@@ -196,23 +293,46 @@ def build_icns(out_icns: str) -> None:
             ("icon_512x512@2x.png", 1024),
         ]
         for fname, px in specs:
-            dst = os.path.join(iconset_dir, fname)
-            if px == 1024:
-                shutil.copyfile(master_png, dst)
-            else:
-                subprocess.run(
-                    ["sips", "-z", str(px), str(px), master_png, "--out", dst],
-                    check=True,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                )
+            write_png(os.path.join(iconset_dir, fname), px, px, by_size[px])
 
-        subprocess.run(["iconutil", "-c", "icns", iconset_dir, "-o", out_icns], check=True)
+        if shutil.which("iconutil"):
+            subprocess.run(["iconutil", "-c", "icns", iconset_dir, "-o", out_icns], check=True)
+
+
+def build_tauri_icons(out_dir: str) -> None:
+    os.makedirs(out_dir, exist_ok=True)
+    b1024 = render_icon_rgba(1024)
+    b512 = _downsample_half(b1024, 1024)
+    b256 = _downsample_half(b512, 512)
+    b128 = _downsample_half(b256, 256)
+    b64 = _downsample_half(b128, 128)
+    b32 = _downsample_half(b64, 64)
+
+    write_png(os.path.join(out_dir, "32x32.png"), 32, 32, b32)
+    write_png(os.path.join(out_dir, "128x128.png"), 128, 128, b128)
+    write_png(os.path.join(out_dir, "128x128@2x.png"), 256, 256, b256)
+    write_png(os.path.join(out_dir, "icon.png"), 512, 512, b512)
+    write_tray_png(os.path.join(out_dir, "tray.png"))
+
+    ico_entries: list[tuple[int, bytes]] = []
+    for sz, buf in ((32, b32), (64, b64), (128, b128), (256, b256)):
+        tmp_png = os.path.join(out_dir, f".tmp_{sz}.png")
+        write_png(tmp_png, sz, sz, buf)
+        with open(tmp_png, "rb") as fh:
+            ico_entries.append((sz, fh.read()))
+        os.unlink(tmp_png)
+    write_ico(os.path.join(out_dir, "icon.ico"), ico_entries)
+
+    if shutil.which("iconutil"):
+        build_icns(os.path.join(out_dir, "icon.icns"), master_buf=b1024)
 
 
 def main() -> int:
+    if len(sys.argv) == 3 and sys.argv[1] == "--tauri-dir":
+        build_tauri_icons(sys.argv[2])
+        return 0
     if len(sys.argv) != 2:
-        print("Usage: generate_icon.py <output.icns>", file=sys.stderr)
+        print("Usage: generate_icon.py <output.icns> | --tauri-dir <dir>", file=sys.stderr)
         return 2
     build_icns(sys.argv[1])
     return 0

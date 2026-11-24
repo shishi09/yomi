@@ -1,0 +1,52 @@
+[package]
+name = "yomi"
+version = "3.0.0"
+description = "Cross-platform manga translator & visual Studio (Apple Vision / Windows OCR / Tesseract + Gemma 4 / Cloud APIs)"
+authors = ["shishi09"]
+license = "MIT"
+edition = "2021"
+
+[[bin]]
+name = "yomi"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-dialog = "2"
+axum = { version = "0.8", features = ["json"] }
+tower-http = { version = "0.6", features = ["cors"] }
+tokio = { version = "1", features = ["full"] }
+tokio-util = "0.7"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp", "gif", "bmp"] }
+base64 = "0.22"
+sha2 = "0.10"
+hex = "0.4"
+regex = "1"
+dirs = "6"
+sysinfo = "0.33"
+url = "2"
+tempfile = "3"
+futures-util = "0.3"
+arboard = "3"
+open = "5"
+unicode-normalization = "0.1"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows = { version = "0.58", features = [
+  "Media_Ocr",
+  "Graphics_Imaging",
+  "Storage_Streams",
+  "Globalization",
+  "Foundation",
+  "Foundation_Collections",
+] }
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"
