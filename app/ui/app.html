@@ -241,6 +241,7 @@
   }
   .main-pane.wiz-mode .main-header { padding-left: 88px; min-height: 48px; }
   .main-pane.wiz-mode.is-fullscreen .main-header { padding-left: clamp(24px, 3vw, 48px); }
+  .main-pane.home-mode .main-header { display: none; }
   .main-title {
     margin: 0; font-size: clamp(16px, 1.3vw, 20px); font-weight: 700; letter-spacing: -0.02em;
     display: inline-flex; align-items: center; gap: 8px;
@@ -255,37 +256,6 @@
     width: 20px; height: 18px; display: block; image-rendering: pixelated;
   }
   .header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-  .hdr-status-pill {
-    border: 1px solid var(--card-border); background: var(--sand); color: var(--muted);
-    border-radius: 999px; padding: 5px 12px; font-size: 12px; font-weight: 600;
-    font-family: inherit; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 7px;
-    transition: background 0.14s, border-color 0.14s;
-  }
-  .hdr-status-pill.on {
-    background: var(--green-soft); color: var(--green); border-color: rgba(79, 127, 59, 0.18);
-  }
-  .hdr-status-pill:hover { filter: brightness(0.98); }
-  .hdr-sep { width: 1px; height: 16px; background: var(--card-border); margin: 0 2px; }
-  .quit-pill {
-    border: 1px solid var(--pill-border); background: var(--pill-bg); color: var(--text);
-    box-shadow: var(--pill-shadow); border-radius: 999px;
-    padding: 5px 13px; font-size: 12.5px; font-weight: 500;
-    font-family: inherit; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 6px;
-  }
-  .quit-pill svg { width: 13px; height: 13px; color: var(--accent-text); flex-shrink: 0; }
-  .quit-pill:hover { background: var(--pill-hover); }
-  .icon-circle-btn {
-    width: 32px; height: 32px; padding: 0; border-radius: 999px;
-    border: 1px solid var(--pill-border); background: var(--pill-bg); color: var(--text);
-    box-shadow: var(--pill-shadow); cursor: pointer;
-    display: inline-flex; align-items: center; justify-content: center;
-    transition: background 0.14s, transform 0.12s;
-  }
-  .icon-circle-btn svg { width: 15px; height: 15px; color: var(--text); }
-  .icon-circle-btn:hover { background: var(--pill-hover); }
-  .icon-circle-btn.gear-spin:hover { transform: rotate(18deg); }
 
   /* HEADER SEG FR/EN IN WIZARD */
   .lang-seg {
@@ -304,13 +274,16 @@
   .main-scroll {
     flex: 1; overflow-y: auto; padding: 4px clamp(20px, 2.8vw, 44px) clamp(18px, 2.5vh, 30px);
   }
-  .main-pane.wiz-mode .main-scroll,
-  .main-pane.home-mode .main-scroll {
+  .main-pane.wiz-mode .main-scroll {
     padding: clamp(8px, 2vh, 24px) clamp(20px, 3vw, 48px);
     display: flex; flex-direction: column;
   }
+  .main-pane.home-mode .main-scroll {
+    padding: clamp(22px, 3vh, 36px) clamp(20px, 3vw, 48px) clamp(18px, 2.5vh, 30px);
+    display: flex; flex-direction: column;
+  }
   .main-pane.home-mode.is-fullscreen .main-scroll {
-    padding: clamp(10px, 1.8vh, 22px) clamp(24px, 3vw, 48px) clamp(20px, 2.8vh, 36px);
+    padding: clamp(22px, 2.8vh, 36px) clamp(24px, 3vw, 48px) clamp(22px, 2.8vh, 36px);
   }
   .main-pane.test-mode .main-scroll {
     padding: 4px clamp(16px, 2.2vw, 32px) clamp(14px, 2vh, 22px);
@@ -1360,10 +1333,6 @@
           <button type="button" data-wiz-lang="fr">FR</button>
           <button type="button" data-wiz-lang="en">EN</button>
         </div>
-        <button id="btn-nav-home" class="quit-pill hidden"></button>
-        <button id="hdr-status-pill" type="button" class="hdr-status-pill hidden"></button>
-        <span id="hdr-sep" class="hdr-sep hidden"></span>
-        <button id="btn-nav-settings" class="icon-circle-btn gear-spin hidden"></button>
       </div>
     </header>
 
@@ -1627,8 +1596,6 @@
       stop_srv: "Arrêter",
       restart_srv: "Redémarrer",
       open_test: "Page de test",
-      open_settings: "Réglages",
-      back_home: "Accueil",
       home_sub: "Tout est configuré. Lancez le traducteur puis ouvrez une page manga dans votre navigateur.",
       sec_launcher: "Traducteur",
       sec_summary: "Récapitulatif de votre configuration",
@@ -1761,8 +1728,6 @@
       nav_home: "Accueil",
       nav_studio: "Studio",
       nav_settings: "Paramètres",
-      hdr_ready: "Yomi est prêt",
-      hdr_paused: "Yomi en veille",
       hero_title_on: "Tout est prêt.",
       hero_accent_on: "Bonne lecture !",
       hero_title_off: "Yomi est en veille.",
@@ -1897,8 +1862,6 @@
       stop_srv: "Stop",
       restart_srv: "Restart",
       open_test: "Test Page",
-      open_settings: "Settings",
-      back_home: "Home",
       home_sub: "Your setup is ready. Launch the translator, then open any manga page in your browser.",
       sec_launcher: "Translator",
       sec_summary: "Configuration Summary",
@@ -2031,8 +1994,6 @@
       nav_home: "Home",
       nav_studio: "Studio",
       nav_settings: "Settings",
-      hdr_ready: "Yomi is ready",
-      hdr_paused: "Yomi paused",
       hero_title_on: "All set.",
       hero_accent_on: "Happy reading!",
       hero_title_off: "Yomi is paused.",
@@ -4842,7 +4803,6 @@
     if (!sysState) return;
     renderSidebar();
 
-    const srvOn = !!sysState.server_running;
     const pane = document.getElementById("main-pane");
     pane.classList.toggle("home-mode", currentView === "home");
     pane.classList.toggle("wiz-mode", currentView === "wizard");
@@ -4853,24 +4813,6 @@
     for (const b of wizLangSeg.querySelectorAll("[data-wiz-lang]")) {
       b.classList.toggle("on", b.getAttribute("data-wiz-lang") === uiLang);
     }
-
-    const navHomeBtn = document.getElementById("btn-nav-home");
-    navHomeBtn.innerHTML = `${ICONS.arrowLeft}<span>${tr("back_home")}</span>`;
-    navHomeBtn.classList.add("hidden");
-
-    const hdrStatus = document.getElementById("hdr-status-pill");
-    if (hdrStatus) {
-      hdrStatus.className = `hdr-status-pill ${srvOn ? "on" : "off"} ${currentView === "wizard" ? "hidden" : ""}`;
-      hdrStatus.innerHTML = `<span class="pulse-dot ${srvOn ? "on" : "off"}"></span><span>${srvOn ? tr("hdr_ready") : tr("hdr_paused")}</span>`;
-    }
-    const navSettingsBtn = document.getElementById("btn-nav-settings");
-    const showNavSettings = currentView === "home" || currentView === "test";
-    navSettingsBtn.innerHTML = `${ICONS.gear}`;
-    navSettingsBtn.title = `${tr("open_settings")} (⌘,)`;
-    navSettingsBtn.classList.toggle("hidden", !showNavSettings);
-
-    const hdrSep = document.getElementById("hdr-sep");
-    if (hdrSep) hdrSep.classList.toggle("hidden", !showNavSettings);
 
     const titleEl = document.getElementById("page-title");
     const bodyEl = document.getElementById("main-body");
@@ -5590,14 +5532,6 @@
       render();
     });
   }
-  const hdrStatusBtn = document.getElementById("hdr-status-pill");
-  if (hdrStatusBtn) {
-    hdrStatusBtn.addEventListener("click", () => {
-      currentView = "home";
-      bannerMsg = null;
-      render();
-    });
-  }
   const btnThemeLight = document.getElementById("btn-theme-light");
   if (btnThemeLight) {
     btnThemeLight.addEventListener("click", () => {
@@ -5614,17 +5548,6 @@
       render();
     });
   }
-  document.getElementById("btn-nav-settings").addEventListener("click", () => {
-    currentView = "settings";
-    settingsTab = "general";
-    bannerMsg = null;
-    render();
-  });
-  document.getElementById("btn-nav-home").addEventListener("click", () => {
-    currentView = "home";
-    bannerMsg = null;
-    render();
-  });
   document.getElementById("btn-prev").addEventListener("click", () => {
     if (wizardStep > 1) {
       wizardStep -= 1;
