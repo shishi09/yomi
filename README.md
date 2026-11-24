@@ -52,7 +52,7 @@
 ## Build & Run from Source
 
 ```bash
-git clone https://github.com/<your-username>/yomi.git
+git clone https://github.com/shishi09/yomi.git
 cd yomi
 ./scripts/build_app.sh --install
 open "/Applications/Yomi.app"
@@ -77,7 +77,7 @@ Builds `dist/Yomi-2.1.0-macOS-arm64.dmg` with drag-to-Applications layout ready 
 - `userscript/` — Browser overlay & frosted popover script (`yomi.user.js`) for Safari / Chrome / Arc / Firefox / Brave
 - `scripts/` — Apple Silicon app bundler (`build_app.sh`), `.dmg` installer packager (`build_dmg.sh`), & Washi pixel-cat icon generator (`generate_icon.py`)
 - `glossaries/examples/` — Built-in series glossary examples copied into `Application Support`
-- `server.py` — Local translation HTTP server (Apple Vision + Ollama Gemma 4 + Gemini API fallback)
+- `server.py` — Local translation HTTP server (Apple Vision + Ollama Gemma 4 + multi-provider Cloud APIs)
 
 ---
 
@@ -108,6 +108,16 @@ Builds `dist/Yomi-2.1.0-macOS-arm64.dmg` with drag-to-Applications layout ready 
 
 ---
 
+## Feedback, Bugs & Ideas
+
+Have feedback, spotted a bug, or want a new feature or API provider? You can reach out directly from **Yomi → Settings → About** or use:
+
+- **[Report a bug](https://github.com/shishi09/yomi/issues/new?template=bug_report.md)**
+- **[Suggest a feature or improvement](https://github.com/shishi09/yomi/issues/new?template=feature_request.md)**
+- **[GitHub Discussions](https://github.com/shishi09/yomi/discussions)** — questions, general feedback, upvoting ideas, and community manga glossaries
+
+---
+
 ## En français (utilisation rapide)
 
 1. Télécharge **`Yomi-2.1.0-macOS-arm64.dmg`** dans **Releases**, ouvre-le et glisse **`Yomi.app`** dans **Applications** *(ou compile depuis les sources avec `./scripts/build_app.sh --install`)*.
@@ -119,3 +129,11 @@ Builds `dist/Yomi-2.1.0-macOS-arm64.dmg` with drag-to-Applications layout ready 
    - Choisis tes langues source/cible et le mode Vision.
    - Connecte ton navigateur : installation automatique dans le dossier **Userscripts** (Safari) avec mise à jour silencieuse au lancement, ou installation en 1 clic via `/yomi.user.js` dans Chrome/Arc/Brave/Firefox.
 3. Ouvre n'importe quel chapitre manga et appuie sur **`Option + P`**, ou clique sur **Yomi Studio** depuis l'accueil pour traduire, recadrer, retoucher les bulles et exporter une planche en PNG.
+
+### Retours & améliorations
+
+Tu peux envoyer un retour directement depuis **Yomi → Paramètres → À propos** ou ici sur GitHub :
+
+- **[Signaler un bug](https://github.com/shishi09/yomi/issues/new?template=bug_report.md)**
+- **[Proposer une amélioration](https://github.com/shishi09/yomi/issues/new?template=feature_request.md)**
+- **[GitHub Discussions](https://github.com/shishi09/yomi/discussions)** — avis généraux, questions d'installation, votes sur les idées et partage de glossaires manga

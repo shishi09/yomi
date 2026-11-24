@@ -20,7 +20,7 @@ Steps to reproduce the behavior:
 - Unified Memory: [e.g. 8 GB / 16 GB / 24 GB]
 - macOS Version: [e.g. 15.x / 26.x]
 - Browser + Userscript Manager (if browser issue): [e.g. Safari + Userscripts / Chrome + Tampermonkey]
-- Translation Engine & Model: [e.g. Ollama `gemma4:12b` / Gemini API]
+- Translation Engine & Model: [e.g. Ollama `gemma4:12b` / Gemini / OpenAI / Claude / OpenRouter / Custom]
 
 **Logs / Output (if applicable)**
 If helpful, attach redacted output from `"/Applications/Yomi.app/Contents/MacOS/Yomi" --self-test` or console logs (make sure no API keys or personal paths are included).

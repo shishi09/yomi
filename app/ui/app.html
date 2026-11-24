@@ -1348,6 +1348,7 @@
 
 <script>
 (function () {
+  const YOMI_REPO_URL = "https://github.com/shishi09/yomi";
   const ICONS = {
     gear: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
     brush: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 7l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 10l4.37-4.37a2.12 2.12 0 1 0-3-3Z"/><path d="M9 8c-2 3-4 3.5-7 4l8 10c2-1 6-5 6-7"/></svg>`,
@@ -1763,6 +1764,18 @@
       st_back_list: "Toutes les bulles",
       st_no_bubbles: "Aucune bulle détectée pour l'instant.",
       st_fit: "Ajuster",
+      sec_feedback: "Retours & Communauté",
+      fb_bug_t: "Signaler un bug",
+      fb_bug_d: "Ouvre GitHub avec votre puce, RAM, macOS et version de Yomi pré-remplis (aucune donnée privée).",
+      fb_bug_btn: "Signaler un bug",
+      fb_feat_t: "Proposer une amélioration",
+      fb_feat_d: "Suggérez une fonctionnalité, un fournisseur API ou une amélioration de l'interface.",
+      fb_feat_btn: "Proposer une idée",
+      fb_disc_t: "Discussions & Entraide",
+      fb_disc_d: "Donnez un avis général, votez pour des idées ou partagez vos glossaires manga.",
+      fb_disc_btn: "Ouvrir Discussions",
+      fb_repo_t: "Dépôt GitHub",
+      fb_repo_d: "Code source, mises à jour (.dmg) et historique des versions.",
     },
     en: {
       quit_app: "Quit Application",
@@ -2029,6 +2042,18 @@
       st_back_list: "All bubbles",
       st_no_bubbles: "No bubbles detected yet.",
       st_fit: "Fit",
+      sec_feedback: "Feedback & Community",
+      fb_bug_t: "Report a Bug",
+      fb_bug_d: "Opens GitHub with your chip, RAM, macOS, and Yomi version pre-filled (no private data).",
+      fb_bug_btn: "Report Bug",
+      fb_feat_t: "Suggest an Improvement",
+      fb_feat_d: "Request a feature, new API provider, or UI improvement.",
+      fb_feat_btn: "Suggest Idea",
+      fb_disc_t: "Discussions & Q&A",
+      fb_disc_d: "Share general feedback, upvote ideas, or share manga glossaries.",
+      fb_disc_btn: "Open Discussions",
+      fb_repo_t: "GitHub Repository",
+      fb_repo_d: "Source code, .dmg releases, and changelog.",
     }
   };
 
@@ -4799,6 +4824,32 @@
     `;
   }
 
+  function buildBugReportUrl() {
+    const engineSummary = form.engine_mode === "local"
+      ? `Local Ollama (${form.local_model})`
+      : form.engine_mode === "api"
+        ? `Cloud API (${form.api_provider}: ${form.api_model || "-"})`
+        : `Both (Local: ${form.local_model}, Cloud: ${form.api_provider})`;
+    const body = [
+      "**Describe the bug**",
+      "A clear and concise description of what happened.",
+      "",
+      "**To Reproduce**",
+      "Steps to reproduce the behavior:",
+      "1. Open `...`",
+      "2. Click on `...`",
+      "3. See error",
+      "",
+      "**Environment**",
+      "- Yomi Version: 2.1.0",
+      `- Apple Silicon Chip: ${sysState ? (sysState.chip || "") : ""}`,
+      `- Unified Memory: ${sysState ? (sysState.ram_gb || "") : ""} GB`,
+      `- macOS Version: ${sysState ? (sysState.macos || "") : ""}`,
+      `- Translation Engine & Model: ${engineSummary}`,
+    ].join("\n");
+    return `${YOMI_REPO_URL}/issues/new?labels=bug&title=${encodeURIComponent("[Bug]: ")}&body=${encodeURIComponent(body)}`;
+  }
+
   function render() {
     if (!sysState) return;
     renderSidebar();
@@ -4934,6 +4985,37 @@
             <div class="group-row">
               <div class="row-left"><div class="row-title">Data</div></div>
               <div class="row-right"><span style="color:var(--muted);font-size:11px">${sysState.data_dir}</span></div>
+            </div>
+          </div>
+          <div class="sec-title">${tr("sec_feedback")}</div>
+          <div class="group-card">
+            <div class="group-row">
+              <div class="row-left">
+                <div class="row-title">${tr("fb_bug_t")}</div>
+                <div class="row-sub">${tr("fb_bug_d")}</div>
+              </div>
+              <div class="row-right"><button id="btn-feedback-bug" class="pill-btn">${tr("fb_bug_btn")}</button></div>
+            </div>
+            <div class="group-row">
+              <div class="row-left">
+                <div class="row-title">${tr("fb_feat_t")}</div>
+                <div class="row-sub">${tr("fb_feat_d")}</div>
+              </div>
+              <div class="row-right"><button id="btn-feedback-feature" class="pill-btn blue">${tr("fb_feat_btn")}</button></div>
+            </div>
+            <div class="group-row">
+              <div class="row-left">
+                <div class="row-title">${tr("fb_disc_t")}</div>
+                <div class="row-sub">${tr("fb_disc_d")}</div>
+              </div>
+              <div class="row-right"><button id="btn-feedback-discussions" class="pill-btn">${tr("fb_disc_btn")}</button></div>
+            </div>
+            <div class="group-row">
+              <div class="row-left">
+                <div class="row-title">${tr("fb_repo_t")}</div>
+                <div class="row-sub">${tr("fb_repo_d")}</div>
+              </div>
+              <div class="row-right"><button id="btn-feedback-repo" class="pill-btn">shishi09/yomi ↗</button></div>
             </div>
           </div>
         `;
@@ -5422,6 +5504,22 @@
         bannerMsg = null;
         render();
       });
+    }
+    for (const [id, getUrl] of [
+      ["btn-feedback-bug", () => buildBugReportUrl()],
+      ["btn-feedback-feature", () => `${YOMI_REPO_URL}/issues/new?template=feature_request.md`],
+      ["btn-feedback-discussions", () => `${YOMI_REPO_URL}/discussions`],
+      ["btn-feedback-repo", () => YOMI_REPO_URL],
+    ]) {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.addEventListener("click", () => {
+          callBridge("openExternalUrl", { url: getUrl() }).catch((err) => {
+            bannerMsg = { ok: false, text: err.message };
+            render();
+          });
+        });
+      }
     }
     const btnOpenTest = document.getElementById("btn-open-test");
     if (btnOpenTest) {

@@ -384,7 +384,7 @@ func testCloudApiKey(provider rawProvider: String, key rawKey: String, baseUrl r
     var headers = ["Authorization": "Bearer \(key)"]
     var checkUrl = "\(base)/models"
     if provLower == "openrouter" {
-        headers["HTTP-Referer"] = "https://github.com/yomi"
+        headers["HTTP-Referer"] = "https://github.com/shishi09/yomi"
         headers["X-Title"] = "Yomi"
         checkUrl = "\(base)/auth/key"
     }
@@ -1441,6 +1441,20 @@ func makeMenuBarCatIcon(awake: Bool) -> NSImage {
                 }
             }
             resolveBridgeCall(id: callId, ok: true, payload: [:])
+
+        case "openExternalUrl":
+            let raw = (payload["url"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            if let url = URL(string: raw),
+               let scheme = url.scheme?.lowercased(),
+               scheme == "https",
+               url.host?.lowercased() == "github.com" {
+                Task { @MainActor in
+                    NSWorkspace.shared.open(url)
+                }
+                resolveBridgeCall(id: callId, ok: true, payload: ["opened": true, "url": url.absoluteString])
+            } else {
+                resolveBridgeCall(id: callId, ok: false, payload: ["error": "Invalid external URL"])
+            }
 
         case "installUserscriptToFolder":
             Task { @MainActor [weak self] in

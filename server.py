@@ -1011,7 +1011,7 @@ def test_cloud_api_key(
     headers = {"Authorization": f"Bearer {key}"}
     check_url = f"{resolved_base}/models"
     if prov == "openrouter":
-        headers["HTTP-Referer"] = "https://github.com/yomi"
+        headers["HTTP-Referer"] = "https://github.com/shishi09/yomi"
         headers["X-Title"] = "Yomi"
         check_url = f"{resolved_base}/auth/key"
     req = urllib.request.Request(check_url, headers=headers, method="GET")
@@ -2126,7 +2126,7 @@ def translate_bubbles_with_openai_compat(
         "Authorization": f"Bearer {api_key}",
     }
     if provider == "openrouter":
-        headers["HTTP-Referer"] = "https://github.com/yomi"
+        headers["HTTP-Referer"] = "https://github.com/shishi09/yomi"
         headers["X-Title"] = "Yomi"
 
     url = f"{base_url.rstrip('/')}/chat/completions"
