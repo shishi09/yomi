@@ -1428,6 +1428,96 @@
     serif: 'Georgia, "New York", "Times New Roman", serif',
   };
 
+  const CLOUD_PROVIDERS = {
+    gemini: {
+      label: "Google Gemini",
+      keyPh: "AIza...",
+      baseUrl: "https://generativelanguage.googleapis.com/v1beta",
+      models: [
+        { v: "gemini-3.8-flash", l: "Gemini 3.8 Flash" },
+        { v: "gemini-3.5-flash-lite", l: "Gemini 3.5 Flash-Lite" },
+        { v: "gemini-3.6-flash", l: "Gemini 3.6 Flash" },
+      ],
+    },
+    openai: {
+      label: "OpenAI",
+      keyPh: "sk-...",
+      baseUrl: "https://api.openai.com/v1",
+      models: [
+        { v: "gpt-4.1-mini", l: "GPT-4.1 Mini" },
+        { v: "gpt-4.1", l: "GPT-4.1" },
+        { v: "gpt-4o-mini", l: "GPT-4o Mini" },
+        { v: "gpt-4o", l: "GPT-4o" },
+      ],
+    },
+    anthropic: {
+      label: "Anthropic Claude",
+      keyPh: "sk-ant-...",
+      baseUrl: "https://api.anthropic.com/v1",
+      models: [
+        { v: "claude-sonnet-4-5", l: "Claude Sonnet 4.5" },
+        { v: "claude-haiku-4-5", l: "Claude Haiku 4.5" },
+        { v: "claude-opus-4-1", l: "Claude Opus 4.1" },
+      ],
+    },
+    openrouter: {
+      label: "OpenRouter",
+      keyPh: "sk-or-...",
+      baseUrl: "https://openrouter.ai/api/v1",
+      models: [
+        { v: "google/gemini-2.5-flash", l: "Gemini 2.5 Flash" },
+        { v: "openai/gpt-4.1-mini", l: "GPT-4.1 Mini" },
+        { v: "anthropic/claude-sonnet-4", l: "Claude Sonnet 4" },
+        { v: "qwen/qwen2.5-vl-72b-instruct", l: "Qwen 2.5 VL 72B" },
+      ],
+    },
+    mistral: {
+      label: "Mistral AI",
+      keyPh: "...",
+      baseUrl: "https://api.mistral.ai/v1",
+      models: [
+        { v: "mistral-medium-latest", l: "Mistral Medium" },
+        { v: "mistral-large-latest", l: "Mistral Large" },
+        { v: "pixtral-large-latest", l: "Pixtral Large (Vision)" },
+        { v: "mistral-small-latest", l: "Mistral Small" },
+      ],
+    },
+    deepseek: {
+      label: "DeepSeek",
+      keyPh: "sk-...",
+      baseUrl: "https://api.deepseek.com/v1",
+      models: [
+        { v: "deepseek-chat", l: "DeepSeek Chat (V3)" },
+        { v: "deepseek-reasoner", l: "DeepSeek Reasoner (R1)" },
+      ],
+    },
+    groq: {
+      label: "Groq",
+      keyPh: "gsk_...",
+      baseUrl: "https://api.groq.com/openai/v1",
+      models: [
+        { v: "meta-llama/llama-4-scout-17b-16e-instruct", l: "Llama 4 Scout 17B (Vision)" },
+        { v: "meta-llama/llama-4-maverick-17b-128e-instruct", l: "Llama 4 Maverick 17B" },
+        { v: "llama-3.3-70b-versatile", l: "Llama 3.3 70B" },
+      ],
+    },
+    xai: {
+      label: "xAI (Grok)",
+      keyPh: "xai-...",
+      baseUrl: "https://api.x.ai/v1",
+      models: [
+        { v: "grok-2-vision-latest", l: "Grok 2 Vision" },
+        { v: "grok-3-mini-fast", l: "Grok 3 Mini Fast" },
+      ],
+    },
+    custom: {
+      label: "Custom (OpenAI-compatible)",
+      keyPh: "sk-... / token",
+      baseUrl: "",
+      models: [],
+    },
+  };
+
   const LOCAL_MODELS = [
     { id: "gemma4:e4b", name: "Gemma 4 E4B (Vision)", desc_fr: "Idéal Mac 8 Go ou M1/M2 · Rapide et léger", desc_en: "Ideal for 8 GB or M1/M2 · Fast & light" },
     { id: "gemma4:12b", name: "Gemma 4 12B (Vision)", desc_fr: "Idéal M3+ / Pro 16 Go · Meilleur équilibre VF", desc_en: "Ideal for M3+ / Pro 16 GB · Best quality" },
@@ -1468,7 +1558,7 @@
       sec_tools: "Outils requis",
       sec_engine: "Mode de traduction",
       sec_local_models: "Modèles Gemma 4 locaux",
-      sec_gemini: "API Google Gemini",
+      sec_gemini: "API Cloud (Multi-fournisseurs)",
       sec_langs: "Traduction",
       sec_vision: "Analyse visuelle (Set-of-Mark)",
       sec_safari: "Safari (Userscripts)",
@@ -1501,16 +1591,22 @@
       cancel_btn: "Annuler",
       mode_local_t: "100 % Local (Ollama)",
       mode_local_d: "Gratuit, illimité et privé sur votre Mac",
-      mode_api_t: "API Gemini (Cloud)",
-      mode_api_d: "Ultra-rapide sans utiliser la RAM (clé requise)",
+      mode_api_t: "API Cloud (Multi-fournisseurs)",
+      mode_api_d: "Gemini, OpenAI, Claude, OpenRouter, Mistral, DeepSeek…",
       mode_both_t: "Les deux (Local + secours Cloud)",
-      mode_both_d: "Modèle local par défaut + Gemini disponible dans le menu",
-      lbl_api_key: "Clé API Gemini",
+      mode_both_d: "Modèle local par défaut + fournisseur Cloud disponible à tout moment",
+      lbl_api_provider: "Fournisseur API",
+      lbl_api_key: "Clé API",
+      lbl_api_base_url: "URL de base API",
+      ph_api_base_url: "https://api.exemple.com/v1",
+      lbl_api_custom_mod: "ID du modèle",
+      ph_api_custom_mod: "ex: gpt-4.1-mini, claude-sonnet-4-5...",
+      opt_custom_model: "Autre modèle (saisie libre)…",
       ph_api: "AIza...",
       ph_api_saved: "Clé enregistrée (laisser vide pour garder)",
       test_key: "Tester",
       save_key: "Enregistrer",
-      lbl_api_mod: "Modèle Gemini",
+      lbl_api_mod: "Modèle Cloud",
       lbl_src_lang: "Langue d'origine du manga",
       lbl_tgt_lang: "Langue de traduction",
       lbl_vis_mode: "Mode Vision",
@@ -1572,14 +1668,14 @@
       wiz_t2: "Choisissez votre moteur",
       wiz_s2: "100 % privé sur votre Mac, ultra-rapide dans le cloud, ou les deux.",
       wiz_hint_local: "À l'étape suivante : vérification de Python & Ollama et choix du modèle Gemma 4.",
-      wiz_hint_api: "À l'étape suivante : vérification de Python uniquement (zéro modèle à télécharger) et clé API Gemini.",
-      wiz_hint_both: "À l'étape suivante : Python, Ollama, modèle local Gemma 4 + clé API Gemini.",
+      wiz_hint_api: "À l'étape suivante : vérification de Python uniquement (zéro modèle à télécharger) et choix du fournisseur API.",
+      wiz_hint_both: "À l'étape suivante : Python, Ollama, modèle local Gemma 4 + clé API Cloud.",
       wiz_t2_local: "Outils & Modèle local",
       wiz_s2_local: "Vérifiez Python et Ollama puis choisissez votre modèle Gemma 4 sur Mac.",
-      wiz_t2_api: "Outils & Clé API Gemini",
-      wiz_s2_api: "Vérifiez Python puis entrez votre clé API Gemini (aucun modèle lourd requis).",
-      wiz_t2_both: "Outils, Modèle local & API Gemini",
-      wiz_s2_both: "Configurez votre modèle local par défaut ainsi que le secours cloud Gemini.",
+      wiz_t2_api: "Outils & API Cloud",
+      wiz_s2_api: "Vérifiez Python puis configurez votre fournisseur et clé API (Gemini, OpenAI, Claude, OpenRouter…).",
+      wiz_t2_both: "Outils, Modèle local & API Cloud",
+      wiz_s2_both: "Configurez votre modèle local par défaut ainsi que le fournisseur API de secours.",
       wiz_t3: "Langues & Précision visuelle",
       wiz_s3: "Définissez la langue des planches et votre style de lecture.",
       wiz_t4: "Connectez votre navigateur",
@@ -1732,7 +1828,7 @@
       sec_tools: "Required Tools",
       sec_engine: "Translation Engine",
       sec_local_models: "Local Gemma 4 Models",
-      sec_gemini: "Google Gemini API",
+      sec_gemini: "Cloud API (Any Provider)",
       sec_langs: "Translation",
       sec_vision: "Visual Analysis (Set-of-Mark)",
       sec_safari: "Safari (Userscripts)",
@@ -1765,16 +1861,22 @@
       cancel_btn: "Cancel",
       mode_local_t: "100% Local (Ollama)",
       mode_local_d: "Free, unlimited and private on your Mac",
-      mode_api_t: "Gemini API (Cloud)",
-      mode_api_d: "Fast with zero local RAM usage (API key required)",
+      mode_api_t: "Cloud API (Any Provider)",
+      mode_api_d: "Gemini, OpenAI, Claude, OpenRouter, Mistral, DeepSeek…",
       mode_both_t: "Both (Local + Cloud fallback)",
-      mode_both_d: "Local model by default + Gemini available anytime",
-      lbl_api_key: "Gemini API Key",
+      mode_both_d: "Local model by default + Cloud API provider available anytime",
+      lbl_api_provider: "API Provider",
+      lbl_api_key: "API Key",
+      lbl_api_base_url: "API Base URL",
+      ph_api_base_url: "https://api.example.com/v1",
+      lbl_api_custom_mod: "Model ID",
+      ph_api_custom_mod: "e.g. gpt-4.1-mini, claude-sonnet-4-5...",
+      opt_custom_model: "Custom model (type manually)…",
       ph_api: "AIza...",
       ph_api_saved: "Key saved (leave blank to keep)",
       test_key: "Test",
       save_key: "Save",
-      lbl_api_mod: "Gemini Model",
+      lbl_api_mod: "Cloud Model",
       lbl_src_lang: "Manga Source Language",
       lbl_tgt_lang: "Target Language",
       lbl_vis_mode: "Vision Mode",
@@ -1836,14 +1938,14 @@
       wiz_t2: "Choose Your Engine",
       wiz_s2: "100% private on your Mac, ultra-fast cloud API, or both.",
       wiz_hint_local: "Next step: verify Python & Ollama, then pick your local Gemma 4 model.",
-      wiz_hint_api: "Next step: verify Python only (no large model needed) and enter your Gemini API key.",
-      wiz_hint_both: "Next step: set up Python, Ollama, local Gemma 4 model + Gemini API key.",
+      wiz_hint_api: "Next step: verify Python only (no large model needed) and configure your Cloud API provider.",
+      wiz_hint_both: "Next step: set up Python, Ollama, local Gemma 4 model + Cloud API provider.",
       wiz_t2_local: "Tools & Local Model",
       wiz_s2_local: "Verify Python & Ollama, then choose your Gemma 4 model on Mac.",
-      wiz_t2_api: "Tools & Gemini API Key",
-      wiz_s2_api: "Verify Python, then enter your Gemini API key (zero large downloads).",
-      wiz_t2_both: "Tools, Local Model & Gemini API",
-      wiz_s2_both: "Configure your default local model and Gemini cloud fallback.",
+      wiz_t2_api: "Tools & Cloud API",
+      wiz_s2_api: "Verify Python, then pick any API provider (Gemini, OpenAI, Claude, OpenRouter…).",
+      wiz_t2_both: "Tools, Local Model & Cloud API",
+      wiz_s2_both: "Configure your default local model and any Cloud API fallback.",
       wiz_t3: "Languages & Visual Precision",
       wiz_s3: "Pick your manga source language, reading language, and Vision mode.",
       wiz_t4: "Connect Your Browser",
@@ -1996,11 +2098,45 @@
   let form = {
     engine_mode: "local",
     local_model: "gemma4:12b",
+    api_provider: "gemini",
+    api_base_url: "",
     api_model: "gemini-3.8-flash",
     source_lang: "en",
     target_lang: "fr",
     vision_mode: "auto",
   };
+  let customBaseUrlOpen = false;
+  let customModelOpen = false;
+
+  function getProviderInfo(prov) {
+    return CLOUD_PROVIDERS[prov] || CLOUD_PROVIDERS.gemini;
+  }
+
+  function formattedCloudModelId() {
+    const prov = CLOUD_PROVIDERS[form.api_provider] ? form.api_provider : "gemini";
+    const pinfo = getProviderInfo(prov);
+    const raw = (form.api_model || (pinfo.models[0] && pinfo.models[0].v) || "").trim();
+    if (!raw) return prov;
+    if (prov === "gemini") return raw.replace(/^gemini:/, "");
+    if (raw.startsWith(`${prov}:`)) return raw;
+    return `${prov}:${raw}`;
+  }
+
+  function parseDefaultCloudModel(spec) {
+    const s = String(spec || "").trim();
+    if (!s || s.startsWith("ollama:")) return null;
+    const colon = s.indexOf(":");
+    if (colon > 0) {
+      const prefix = s.slice(0, colon).toLowerCase();
+      if (CLOUD_PROVIDERS[prefix]) {
+        return { provider: prefix, model: s.slice(colon + 1).trim() };
+      }
+    }
+    if (s.toLowerCase().startsWith("gemini-")) {
+      return { provider: "gemini", model: s };
+    }
+    return { provider: form.api_provider || "gemini", model: s };
+  }
   let progressState = {}; // tool -> { phase/status, completed, total, percent }
   let bannerMsg = null;   // { ok, text }
   let wizardBrowserTab = "safari";
@@ -2798,10 +2934,74 @@
     `;
   }
 
+  function sectionCloudApiCardHtml(isWizard) {
+    const prov = CLOUD_PROVIDERS[form.api_provider] ? form.api_provider : "gemini";
+    const pinfo = getProviderInfo(prov);
+    const savedMatchesProv = Boolean(
+      sysState.config?.has_api_key && (sysState.config?.api_provider || "gemini") === prov
+    );
+    const keyPh = savedMatchesProv
+      ? `${tr("ph_api_saved")} (${sysState.config.api_key_masked})`
+      : (pinfo.keyPh || tr("ph_api"));
+    const providerOpts = Object.entries(CLOUD_PROVIDERS).map(([id, info]) => ({ v: id, l: info.label }));
+    const presetModels = pinfo.models || [];
+    const currentModel = (form.api_model || (presetModels[0] && presetModels[0].v) || "").trim();
+    const isPreset = presetModels.some((m) => m.v === currentModel);
+    const showCustomModelInput = prov === "custom" || customModelOpen || (!isPreset && currentModel !== "");
+    const modelOpts = presetModels.length
+      ? [...presetModels, { v: "__custom__", l: tr("opt_custom_model") }]
+      : [];
+    const showBaseUrlRow = prov === "custom" || customBaseUrlOpen || Boolean(form.api_base_url);
+
+    return `
+      <div class="group-card">
+        <div class="group-row">
+          <div class="row-left"><div class="row-title">${tr("lbl_api_provider")}</div></div>
+          <div class="row-right">
+            ${popSelect("sel-api-provider", providerOpts, prov)}
+          </div>
+        </div>
+        <div class="group-row">
+          <div class="row-left" style="padding-right:8px">
+            <input id="inp-api-key" class="txt-input" type="password" value="${escHtml(apiKeyDraft)}" placeholder="${escHtml(keyPh)}" />
+          </div>
+          <div class="row-right">
+            ${prov !== "custom" && !showBaseUrlRow ? `<button id="btn-toggle-base-url" type="button" class="pill-btn sm" title="Custom Endpoint URL">URL</button>` : ""}
+            <button id="btn-test-key" type="button" class="pill-btn">${tr("test_key")}</button>
+            ${!isWizard ? `<button id="btn-save-key" type="button" class="pill-btn blue">${tr("save_key")}</button>` : ""}
+          </div>
+        </div>
+        ${showBaseUrlRow ? `
+          <div class="group-row">
+            <div class="row-left" style="padding-right:8px">
+              <div class="row-title" style="margin-bottom:4px;font-size:12px;color:var(--muted)">${tr("lbl_api_base_url")}</div>
+              <input id="inp-api-base-url" class="txt-input" type="url" value="${escHtml(form.api_base_url || "")}" placeholder="${escHtml(pinfo.baseUrl || tr("ph_api_base_url"))}" />
+            </div>
+          </div>
+        ` : ""}
+        ${modelOpts.length ? `
+          <div class="group-row">
+            <div class="row-left"><div class="row-title">${tr("lbl_api_mod")}</div></div>
+            <div class="row-right">
+              ${popSelect("sel-api-mod", modelOpts, (showCustomModelInput || !isPreset) ? "__custom__" : currentModel)}
+            </div>
+          </div>
+        ` : ""}
+        ${showCustomModelInput ? `
+          <div class="group-row">
+            <div class="row-left" style="padding-right:8px">
+              <div class="row-title" style="margin-bottom:4px;font-size:12px;color:var(--muted)">${tr("lbl_api_custom_mod")}</div>
+              <input id="inp-api-model" class="txt-input" type="text" value="${escHtml(form.api_model || "")}" placeholder="${escHtml(tr("ph_api_custom_mod"))}" />
+            </div>
+          </div>
+        ` : ""}
+      </div>
+    `;
+  }
+
   function sectionModelsHtml() {
     const showLocal = form.engine_mode !== "api";
     const showApi = form.engine_mode !== "local";
-    const keyPh = sysState.config?.has_api_key ? tr("ph_api_saved") : tr("ph_api");
 
     const modeRows = [
       { id: "local", t: tr("mode_local_t"), d: tr("mode_local_d") },
@@ -2853,29 +3053,7 @@
 
       ${showApi ? `
         <div class="sec-title">${tr("sec_gemini")}</div>
-        <div class="group-card">
-          <div class="group-row">
-            <div class="row-left" style="padding-right:8px">
-              <input id="inp-api-key" class="txt-input" type="password" value="${apiKeyDraft.replace(/"/g, "&quot;")}" placeholder="${keyPh}" />
-            </div>
-            <div class="row-right">
-              <button id="btn-test-key" class="pill-btn">${tr("test_key")}</button>
-              ${currentView !== "wizard" ? `<button id="btn-save-key" class="pill-btn blue">${tr("save_key")}</button>` : ""}
-            </div>
-          </div>
-          ${form.engine_mode === "api" ? `
-            <div class="group-row">
-              <div class="row-left"><div class="row-title">${tr("lbl_api_mod")}</div></div>
-              <div class="row-right">
-                ${popSelect("sel-api-mod", [
-                  { v: "gemini-3.8-flash", l: "Gemini 3.8 Flash" },
-                  { v: "gemini-3.5-flash-lite", l: "Gemini 3.5 Flash-Lite" },
-                  { v: "gemini-3.6-flash", l: "Gemini 3.6 Flash" },
-                ], form.api_model)}
-              </div>
-            </div>
-          ` : ""}
-        </div>
+        ${sectionCloudApiCardHtml(false)}
       ` : ""}
     `;
   }
@@ -3090,28 +3268,7 @@
           </div>
           ${progHtml("python")}${showLocal ? progHtml("ollama") : ""}
           ${showLocal ? `<div class="group-card">${modelRows}${progHtml("pull")}</div>` : ""}
-          ${showApi ? `
-            <div class="group-card">
-              <div class="group-row">
-                <div class="row-left" style="padding-right:8px">
-                  <input id="inp-api-key" class="txt-input" type="password" value="${apiKeyDraft.replace(/"/g, "&quot;")}" placeholder="${keyPh}" />
-                </div>
-                <div class="row-right">
-                  <button id="btn-test-key" class="pill-btn">${tr("test_key")}</button>
-                </div>
-              </div>
-              ${form.engine_mode === "api" ? `
-                <div class="group-row">
-                  <div class="row-left"><div class="row-title">${tr("lbl_api_mod")}</div></div>
-                  <div class="row-right">${popSelect("sel-api-mod", [
-                    { v: "gemini-3.8-flash", l: "Gemini 3.8 Flash" },
-                    { v: "gemini-3.5-flash-lite", l: "Gemini 3.5 Flash-Lite" },
-                    { v: "gemini-3.6-flash", l: "Gemini 3.6 Flash" },
-                  ], form.api_model)}</div>
-                </div>
-              ` : ""}
-            </div>
-          ` : ""}
+          ${showApi ? sectionCloudApiCardHtml(true) : ""}
         </div>
       `;
     }
@@ -3208,11 +3365,16 @@
   function studioAvailableModels() {
     if (Array.isArray(studio.models) && studio.models.length) return studio.models;
     const list = LOCAL_MODELS.map((m) => ({ id: `ollama:${m.id}`, label: `${m.name} (Local)` }));
-    list.push(
-      { id: "gemini-3.8-flash", label: "Gemini 3.8 Flash (Cloud)" },
-      { id: "gemini-3.5-flash-lite", label: "Gemini 3.5 Flash-Lite (Cloud)" },
-      { id: "gemini-3.6-flash", label: "Gemini 3.6 Flash (Cloud)" }
-    );
+    const prov = CLOUD_PROVIDERS[form.api_provider] ? form.api_provider : "gemini";
+    const pinfo = getProviderInfo(prov);
+    for (const m of pinfo.models) {
+      const fid = prov === "gemini" ? m.v : `${prov}:${m.v}`;
+      list.push({ id: fid, label: `${pinfo.label} · ${m.l}` });
+    }
+    const activeId = formattedCloudModelId();
+    if (activeId && !list.some((x) => x.id === activeId)) {
+      list.push({ id: activeId, label: `${pinfo.label} · ${form.api_model}` });
+    }
     return list;
   }
 
@@ -3221,7 +3383,7 @@
     studio.sourceLang = form.source_lang || "en";
     studio.targetLang = form.target_lang || "fr";
     studio.vision = form.vision_mode || "auto";
-    studio.model = form.engine_mode === "api" ? form.api_model : `ollama:${form.local_model}`;
+    studio.model = form.engine_mode === "api" ? formattedCloudModelId() : `ollama:${form.local_model}`;
     studio.initialized = true;
   }
 
@@ -4498,12 +4660,15 @@
     const needsSetup = !pyOk || !olReady;
     const srvOn = !!sysState.server_running;
 
+    const pinfo = getProviderInfo(form.api_provider);
     const engineName = form.engine_mode === "api"
-      ? form.api_model
+      ? (form.api_model || pinfo.label)
       : form.local_model;
-    const engineConnected = form.engine_mode === "api" ? srvOn : (srvOn && olRun);
+    const engineConnected = form.engine_mode === "api"
+      ? (srvOn && !!sysState.config?.has_api_key)
+      : (srvOn && olRun);
     const engineStatusTxt = form.engine_mode === "api"
-      ? (srvOn ? tr("status_cloud") : tr("status_offline"))
+      ? (srvOn ? `${pinfo.label} · ${sysState.config?.has_api_key ? tr("status_connected") : tr("missing")}` : tr("status_offline"))
       : (olRun ? tr("status_connected") : tr("ollama_off"));
 
     const srcMap = { en: tr("src_en"), ja: tr("src_ja"), auto: tr("src_auto") };
@@ -4991,7 +5156,7 @@
     for (const row of document.querySelectorAll("[data-pick-mode]")) {
       row.addEventListener("click", () => {
         form.engine_mode = row.getAttribute("data-pick-mode");
-        const modelStr = form.engine_mode === "api" ? form.api_model : `ollama:${form.local_model}`;
+        const modelStr = form.engine_mode === "api" ? formattedCloudModelId() : `ollama:${form.local_model}`;
         persistSetting({ engine_mode: form.engine_mode, default_model: modelStr });
         render();
       });
@@ -5034,9 +5199,48 @@
       });
     }
 
+    const selApiProv = document.getElementById("sel-api-provider");
+    if (selApiProv) {
+      selApiProv.addEventListener("change", () => {
+        form.api_provider = selApiProv.value || "gemini";
+        const pinfo = getProviderInfo(form.api_provider);
+        form.api_base_url = "";
+        customBaseUrlOpen = form.api_provider === "custom";
+        customModelOpen = form.api_provider === "custom";
+        form.api_model = (pinfo.models[0] && pinfo.models[0].v) || "";
+        apiKeyDraft = "";
+        bannerMsg = null;
+        const updates = {
+          api_provider: form.api_provider,
+          api_base_url: "",
+          api_model: form.api_model,
+        };
+        if (form.engine_mode === "api") updates.default_model = formattedCloudModelId();
+        persistSetting(updates);
+        render();
+      });
+    }
+
+    const btnToggleBaseUrl = document.getElementById("btn-toggle-base-url");
+    if (btnToggleBaseUrl) {
+      btnToggleBaseUrl.addEventListener("click", () => {
+        customBaseUrlOpen = !customBaseUrlOpen;
+        render();
+      });
+    }
+
     const inpKey = document.getElementById("inp-api-key");
     if (inpKey) {
       inpKey.addEventListener("input", () => { apiKeyDraft = inpKey.value; });
+    }
+
+    const inpApiBaseUrl = document.getElementById("inp-api-base-url");
+    if (inpApiBaseUrl) {
+      inpApiBaseUrl.addEventListener("input", () => { form.api_base_url = inpApiBaseUrl.value.trim(); });
+      inpApiBaseUrl.addEventListener("change", () => {
+        form.api_base_url = inpApiBaseUrl.value.trim();
+        persistSetting({ api_base_url: form.api_base_url });
+      });
     }
 
     const btnTestKey = document.getElementById("btn-test-key");
@@ -5044,8 +5248,14 @@
       btnTestKey.addEventListener("click", async () => {
         btnTestKey.disabled = true;
         try {
-          await callBridge("testGeminiKey", { key: apiKeyDraft.trim() });
-          bannerMsg = { ok: true, text: uiLang === "en" ? "Gemini API key is valid!" : "Clé API Gemini valide !" };
+          await callBridge("testApiKey", {
+            provider: form.api_provider,
+            key: apiKeyDraft.trim(),
+            base_url: (form.api_base_url || "").trim(),
+            model: (form.api_model || "").trim(),
+          });
+          const label = getProviderInfo(form.api_provider).label;
+          bannerMsg = { ok: true, text: uiLang === "en" ? `${label} API key is valid!` : `Clé API ${label} valide !` };
         } catch (err) {
           bannerMsg = { ok: false, text: err.message };
         }
@@ -5056,8 +5266,14 @@
     const btnSaveKey = document.getElementById("btn-save-key");
     if (btnSaveKey) {
       btnSaveKey.addEventListener("click", async () => {
-        if (!apiKeyDraft.trim()) return;
-        sysState = await callBridge("saveSettings", { gemini_api_key: apiKeyDraft.trim() });
+        const updates = {
+          api_provider: form.api_provider,
+          api_base_url: (form.api_base_url || "").trim(),
+          api_model: (form.api_model || "").trim(),
+        };
+        if (apiKeyDraft.trim()) updates.api_key = apiKeyDraft.trim();
+        if (form.engine_mode === "api") updates.default_model = formattedCloudModelId();
+        sysState = await callBridge("saveSettings", updates);
         apiKeyDraft = "";
         bannerMsg = { ok: true, text: tr("saved_toast") };
         render();
@@ -5067,8 +5283,30 @@
     const selApiMod = document.getElementById("sel-api-mod");
     if (selApiMod) {
       selApiMod.addEventListener("change", () => {
+        if (selApiMod.value === "__custom__") {
+          customModelOpen = true;
+          render();
+          const inp = document.getElementById("inp-api-model");
+          if (inp) inp.focus();
+          return;
+        }
+        customModelOpen = false;
         form.api_model = selApiMod.value;
-        if (form.engine_mode === "api") persistSetting({ default_model: form.api_model });
+        const updates = { api_model: form.api_model };
+        if (form.engine_mode === "api") updates.default_model = formattedCloudModelId();
+        persistSetting(updates);
+        render();
+      });
+    }
+
+    const inpApiModel = document.getElementById("inp-api-model");
+    if (inpApiModel) {
+      inpApiModel.addEventListener("input", () => { form.api_model = inpApiModel.value.trim(); });
+      inpApiModel.addEventListener("change", () => {
+        form.api_model = inpApiModel.value.trim();
+        const updates = { api_model: form.api_model };
+        if (form.engine_mode === "api") updates.default_model = formattedCloudModelId();
+        persistSetting(updates);
       });
     }
 
@@ -5405,7 +5643,7 @@
     nextBtn.disabled = true;
     isBusy = true;
     syncCatAnimation();
-    const defaultModel = form.engine_mode === "api" ? form.api_model : `ollama:${form.local_model}`;
+    const defaultModel = form.engine_mode === "api" ? formattedCloudModelId() : `ollama:${form.local_model}`;
     try {
       sysState = await callBridge("saveConfigAndStartServer", {
         onboarding_done: true,
@@ -5414,10 +5652,13 @@
         mascot: selectedMascot,
         engine_mode: form.engine_mode,
         default_model: defaultModel,
+        api_provider: form.api_provider,
+        api_base_url: (form.api_base_url || "").trim(),
+        api_model: (form.api_model || "").trim(),
         source_lang: form.source_lang,
         target_lang: form.target_lang,
         vision_mode: form.vision_mode,
-        gemini_api_key: apiKeyDraft.trim(),
+        api_key: apiKeyDraft.trim(),
       });
       apiKeyDraft = "";
       currentView = "home";
@@ -5638,6 +5879,9 @@
     selectedMascot = ["mochi", "kuro", "sakura"].includes(cfg.mascot) ? cfg.mascot : "mochi";
     applyMascotTheme(selectedMascot);
     form.engine_mode = cfg.engine_mode || "local";
+    form.api_provider = CLOUD_PROVIDERS[cfg.api_provider] ? cfg.api_provider : "gemini";
+    form.api_base_url = (cfg.api_base_url || "").trim();
+    customBaseUrlOpen = form.api_provider === "custom" || Boolean(form.api_base_url);
     if (!cfg.onboarding_done && s.recommended_model) {
       form.local_model = s.recommended_model;
     } else if (cfg.default_model && cfg.default_model.startsWith("ollama:")) {
@@ -5645,8 +5889,15 @@
     } else if (s.recommended_model) {
       form.local_model = s.recommended_model;
     }
-    if (cfg.default_model && !cfg.default_model.startsWith("ollama:")) {
-      form.api_model = cfg.default_model;
+    const parsedCloud = parseDefaultCloudModel(cfg.default_model);
+    if (cfg.api_model) {
+      form.api_model = cfg.api_model;
+    } else if (parsedCloud) {
+      form.api_provider = parsedCloud.provider;
+      form.api_model = parsedCloud.model;
+    } else {
+      const firstPreset = getProviderInfo(form.api_provider).models[0];
+      form.api_model = firstPreset ? firstPreset.v : "";
     }
     form.source_lang = cfg.source_lang || "en";
     form.target_lang = cfg.target_lang || "fr";

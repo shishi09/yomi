@@ -1,8 +1,8 @@
 # Yomi — Manga Translator for Apple Silicon (macOS)
 
-**Yomi** (from Japanese *yomu* — « to read ») is a native macOS Apple Silicon app (`Yomi.app`) that translates manga pages directly inside your browser (**Safari, Chrome, Firefox, Brave, Arc**) or inside **Yomi Studio** — **100% locally and free with Gemma 4 + Apple Vision**, or optionally via **Gemini API**.
+**Yomi** (from Japanese *yomu* — « to read ») is a native macOS Apple Silicon app (`Yomi.app`) that translates manga pages directly inside your browser (**Safari, Chrome, Firefox, Brave, Arc**) or inside **Yomi Studio** — **100% locally and free with Gemma 4 + Apple Vision**, or via **any Cloud API provider** (**Google Gemini, OpenAI, Anthropic Claude, OpenRouter, Mistral, DeepSeek, Groq, xAI**, or any OpenAI-compatible endpoint).
 
-> **Français (résumé rapide) :** Application macOS native Apple Silicon (`Yomi.app`) avec **assistant guidé en 5 étapes** (3 chats pixel-art animés + thème Clair/Sombre/Système, recommandation puce + RAM, installation 1 clic de Python 3 / Ollama / Gemma 4, synchro navigateur automatique), **Yomi Studio** intégré pour traduire/retoucher/exporter des planches en PNG, et icône chat dans la barre de menus. Voir la section française ci-dessous.
+> **Français (résumé rapide) :** Application macOS native Apple Silicon (`Yomi.app`) avec **assistant guidé en 5 étapes** (3 chats pixel-art animés + thème Clair/Sombre/Système, recommandation puce + RAM, installation 1 clic de Python 3 / Ollama / Gemma 4, ou n'importe quelle clé API Cloud : Gemini, OpenAI, Claude, OpenRouter, Mistral, DeepSeek, Groq, xAI ou URL OpenAI-compatible), **Yomi Studio** intégré et icône chat dans la barre de menus. Voir la section française ci-dessous.
 
 ---
 
@@ -13,7 +13,7 @@
   - Matching **Washi Safari popover** and floating reader pill (`Crème / Jaune beurre / Encre / Beige sable / Vert discret`).
   - **5-step first-launch assistant**:
     1. **Appearance**: Pick your mascot (**Mochi**, **Kuro**, or **Sakura**) and theme (**Light / Dark / System**).
-    2. **Engine**: **100% Local (Ollama)**, **Gemini API (Cloud)**, or **Both**.
+    2. **Engine**: **100% Local (Ollama)**, **Cloud API (Any Provider)** — Google Gemini, OpenAI, Anthropic Claude, OpenRouter, Mistral, DeepSeek, Groq, xAI, or Custom OpenAI-compatible Base URL — or **Both**.
     3. **Setup & Models**: Detects Apple Silicon chip + RAM + Python + Ollama, recommends the right Gemma 4 model for your hardware, and offers 1-click installation (skips Ollama completely in API-only mode).
     4. **Languages & Vision**: Configure source (`English`, `Japanese`, `Auto`), target (`Français`, `English`, `Español`, `Deutsch`, `Italiano`, `Português`), and Set-of-Mark Vision precision.
     5. **Browser**: Direct auto-install & auto-sync into Safari *Userscripts*, or 1-click install URL (`/yomi.user.js`) for Chrome/Arc/Brave/Firefox (*Tampermonkey* / *Violentmonkey*).
@@ -114,7 +114,7 @@ Builds `dist/Yomi-2.1.0-macOS-arm64.dmg` with drag-to-Applications layout ready 
    - *Premier lancement :* comme l’application est signée localement sans certificat Apple Developer payant, clique sur **Ouvrir quand même** dans *Réglages Système → Confidentialité et sécurité* (ou exécute `xattr -cr "/Applications/Yomi.app"` une seule fois) si macOS bloque l’ouverture.
 2. Ouvre **`Yomi.app`** et suis l'assistant en 5 étapes :
    - Choisis ton compagnon chat (**Mochi**, **Kuro** ou **Sakura**) et le thème (**Clair / Sombre / Système**).
-   - Choisis ton moteur (**100 % Local Ollama**, **API Gemini**, ou **les deux**).
+   - Choisis ton moteur (**100 % Local Ollama**, **API Cloud (Gemini, OpenAI, Claude, OpenRouter, Mistral, DeepSeek, Groq, xAI ou URL OpenAI-compatible)**, ou **les deux**).
    - L'app détecte ta puce Apple Silicon + RAM, installe en 1 clic ce qui manque (**Python 3**, **Ollama**) et pré-sélectionne le modèle Gemma 4 adapté à ton Mac.
    - Choisis tes langues source/cible et le mode Vision.
    - Connecte ton navigateur : installation automatique dans le dossier **Userscripts** (Safari) avec mise à jour silencieuse au lancement, ou installation en 1 clic via `/yomi.user.js` dans Chrome/Arc/Brave/Firefox.

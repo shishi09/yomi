@@ -256,6 +256,39 @@ func maskKey(_ key: String) -> String {
     return "\(trimmed.prefix(4))...\(trimmed.suffix(4))"
 }
 
+private let kProviderDefaults: [String: (baseURL: String, defaultModel: String, envVars: [String])] = [
+    "gemini": ("https://generativelanguage.googleapis.com/v1beta", "gemini-3.8-flash", ["GEMINI_API_KEY", "YOMI_API_KEY"]),
+    "openai": ("https://api.openai.com/v1", "gpt-4.1-mini", ["OPENAI_API_KEY", "YOMI_API_KEY"]),
+    "anthropic": ("https://api.anthropic.com/v1", "claude-sonnet-4-5", ["ANTHROPIC_API_KEY", "YOMI_API_KEY"]),
+    "openrouter": ("https://openrouter.ai/api/v1", "google/gemini-2.5-flash", ["OPENROUTER_API_KEY", "YOMI_API_KEY"]),
+    "mistral": ("https://api.mistral.ai/v1", "mistral-medium-latest", ["MISTRAL_API_KEY", "YOMI_API_KEY"]),
+    "deepseek": ("https://api.deepseek.com/v1", "deepseek-chat", ["DEEPSEEK_API_KEY", "YOMI_API_KEY"]),
+    "groq": ("https://api.groq.com/openai/v1", "meta-llama/llama-4-scout-17b-16e-instruct", ["GROQ_API_KEY", "YOMI_API_KEY"]),
+    "xai": ("https://api.x.ai/v1", "grok-2-vision-latest", ["XAI_API_KEY", "YOMI_API_KEY"]),
+    "custom": ("", "", ["YOMI_API_KEY", "OPENAI_API_KEY"]),
+]
+
+func effectiveCloudApiKey(cfg: [String: Any], provider overrideProvider: String? = nil) -> String {
+    let activeProv = ((cfg["api_provider"] as? String) ?? "gemini").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    let provRaw = (overrideProvider ?? activeProv).trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    let prov = kProviderDefaults[provRaw] != nil ? provRaw : "gemini"
+
+    if prov == activeProv {
+        let key = (cfg["api_key"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        if !key.isEmpty { return key }
+    }
+    if prov == "gemini" {
+        let gem = (cfg["gemini_api_key"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        if !gem.isEmpty { return gem }
+    }
+    for envName in kProviderDefaults[prov]?.envVars ?? [] {
+        if envName == "YOMI_API_KEY" && prov != activeProv { continue }
+        let val = (ProcessInfo.processInfo.environment[envName] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        if !val.isEmpty { return val }
+    }
+    return ""
+}
+
 func loadAppConfig(dataDir: URL) -> [String: Any] {
     let configURL = dataDir.appendingPathComponent("config.json")
     var cfg: [String: Any] = [
@@ -265,6 +298,10 @@ func loadAppConfig(dataDir: URL) -> [String: Any] {
         "mascot": "mochi",
         "engine_mode": "local",
         "default_model": "ollama:gemma4:12b",
+        "api_provider": "gemini",
+        "api_key": "",
+        "api_base_url": "",
+        "api_model": "gemini-3.8-flash",
         "source_lang": "en",
         "target_lang": "fr",
         "vision_mode": "auto",
@@ -275,18 +312,95 @@ func loadAppConfig(dataDir: URL) -> [String: Any] {
        let parsed = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
         for (k, v) in parsed { cfg[k] = v }
     }
+    let prov = ((cfg["api_provider"] as? String) ?? "gemini").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    cfg["api_provider"] = kProviderDefaults[prov] != nil ? prov : "gemini"
     return cfg
 }
 
 func sanitizePublicConfig(_ cfg: [String: Any]) -> [String: Any] {
     var out = cfg
-    let rawKey = (cfg["gemini_api_key"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-    let envKey = (ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-    let effective = !rawKey.isEmpty ? rawKey : envKey
+    let effective = effectiveCloudApiKey(cfg: cfg)
     out.removeValue(forKey: "gemini_api_key")
+    out.removeValue(forKey: "api_key")
     out["has_api_key"] = !effective.isEmpty
     out["api_key_masked"] = maskKey(effective)
     return out
+}
+
+func testCloudApiKey(provider rawProvider: String, key rawKey: String, baseUrl rawBaseUrl: String = "", model rawModel: String = "") -> (Bool, String) {
+    let provLower = rawProvider.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    guard let info = kProviderDefaults[provLower] else {
+        return (false, "Fournisseur inconnu: \(provLower)")
+    }
+    let key = rawKey.trimmingCharacters(in: .whitespacesAndNewlines)
+    if key.isEmpty {
+        return (false, "Clé API vide / Empty API key")
+    }
+    var base = rawBaseUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+    if base.isEmpty { base = info.baseURL }
+    while base.hasSuffix("/") { base.removeLast() }
+    guard let parsedUrl = URL(string: base),
+          let scheme = parsedUrl.scheme?.lowercased(),
+          (scheme == "http" || scheme == "https"),
+          parsedUrl.host != nil else {
+        return (false, "URL de base invalide ou manquante / Invalid base URL")
+    }
+
+    if provLower == "gemini" {
+        let (status, _, errTxt) = httpJSONSync(
+            urlString: "\(base)/models?pageSize=1",
+            method: "GET",
+            headers: ["x-goog-api-key": key],
+            timeout: 12.0
+        )
+        return (status >= 200 && status < 300) ? (true, "OK") : (false, "HTTP \(status): \(errTxt)")
+    }
+
+    if provLower == "anthropic" {
+        let headers = [
+            "x-api-key": key,
+            "anthropic-version": "2023-06-01",
+        ]
+        let (status, _, errTxt) = httpJSONSync(
+            urlString: "\(base)/models?limit=1",
+            method: "GET",
+            headers: headers,
+            timeout: 12.0
+        )
+        if status >= 200 && status < 300 { return (true, "OK") }
+        if status == 404 || status == 405 {
+            let probeModel = rawModel.trimmingCharacters(in: .whitespacesAndNewlines)
+            let body: [String: Any] = [
+                "model": probeModel.isEmpty ? info.defaultModel : probeModel,
+                "max_tokens": 1,
+                "messages": [["role": "user", "content": "hi"]],
+            ]
+            let (st2, _, err2) = httpJSONSync(urlString: "\(base)/messages", method: "POST", body: body, headers: headers, timeout: 12.0)
+            return (st2 >= 200 && st2 < 300) ? (true, "OK") : (false, "HTTP \(st2): \(err2)")
+        }
+        return (false, "HTTP \(status): \(errTxt)")
+    }
+
+    var headers = ["Authorization": "Bearer \(key)"]
+    var checkUrl = "\(base)/models"
+    if provLower == "openrouter" {
+        headers["HTTP-Referer"] = "https://github.com/yomi"
+        headers["X-Title"] = "Yomi"
+        checkUrl = "\(base)/auth/key"
+    }
+    let (status, _, errTxt) = httpJSONSync(urlString: checkUrl, method: "GET", headers: headers, timeout: 12.0)
+    if status >= 200 && status < 300 { return (true, "OK") }
+    if status == 404 || status == 405 {
+        let probeModel = rawModel.trimmingCharacters(in: .whitespacesAndNewlines)
+        let body: [String: Any] = [
+            "model": probeModel.isEmpty ? (info.defaultModel.isEmpty ? "gpt-4o-mini" : info.defaultModel) : probeModel,
+            "max_tokens": 1,
+            "messages": [["role": "user", "content": "hi"]],
+        ]
+        let (st2, _, err2) = httpJSONSync(urlString: "\(base)/chat/completions", method: "POST", body: body, headers: headers, timeout: 12.0)
+        return (st2 >= 200 && st2 < 300) ? (true, "OK") : (false, "HTTP \(st2): \(err2)")
+    }
+    return (false, "HTTP \(status): \(errTxt)")
 }
 
 func recommendLocalModel(chip: String, ramGB: Int) -> String {
@@ -1269,25 +1383,24 @@ func makeMenuBarCatIcon(awake: Bool) -> NSImage {
             }
             resolveBridgeCall(id: callId, ok: true, payload: ["cancelled": true])
 
-        case "testGeminiKey":
+        case "testGeminiKey", "testApiKey":
+            let cfg = loadAppConfig(dataDir: appSupportDataDir())
+            let prov = ((payload["provider"] as? String) ?? (cfg["api_provider"] as? String) ?? "gemini")
+                .trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
             var key = (payload["key"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
             if key.isEmpty {
-                key = (loadAppConfig(dataDir: appSupportDataDir())["gemini_api_key"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                key = effectiveCloudApiKey(cfg: cfg, provider: prov)
             }
-            if key.isEmpty {
-                resolveBridgeCall(id: callId, ok: false, payload: ["error": "Clé API vide / Empty API key"])
-                return
+            var baseUrl = (payload["base_url"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            if baseUrl.isEmpty && prov == ((cfg["api_provider"] as? String) ?? "gemini").lowercased() {
+                baseUrl = (cfg["api_base_url"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
             }
-            let (status, _, errTxt) = httpJSONSync(
-                urlString: "https://generativelanguage.googleapis.com/v1beta/models?pageSize=1",
-                method: "GET",
-                headers: ["x-goog-api-key": key],
-                timeout: 10.0
-            )
-            if status >= 200 && status < 300 {
+            let model = (payload["model"] as? String ?? (cfg["api_model"] as? String) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            let (ok, detail) = testCloudApiKey(provider: prov, key: key, baseUrl: baseUrl, model: model)
+            if ok {
                 resolveBridgeCall(id: callId, ok: true, payload: ["ok": true])
             } else {
-                resolveBridgeCall(id: callId, ok: false, payload: ["error": "HTTP \(status): \(errTxt)"])
+                resolveBridgeCall(id: callId, ok: false, payload: ["error": detail])
             }
 
         case "autoInstallSafariUserscript":
@@ -1455,13 +1568,30 @@ func makeMenuBarCatIcon(awake: Bool) -> NSImage {
         let dataDir = appSupportDataDir()
         try? FileManager.default.createDirectory(at: dataDir, withIntermediateDirectories: true)
         var current = loadAppConfig(dataDir: dataDir)
-        for key in ["onboarding_done", "ui_lang", "theme", "mascot", "engine_mode", "default_model", "source_lang", "target_lang", "vision_mode", "userscripts_dir"] {
+        let oldProvider = ((current["api_provider"] as? String) ?? "gemini").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        for key in ["onboarding_done", "ui_lang", "theme", "mascot", "engine_mode", "default_model", "api_provider", "api_base_url", "api_model", "source_lang", "target_lang", "vision_mode", "userscripts_dir"] {
             if let val = payload[key] { current[key] = val }
         }
+        let newProvider = ((current["api_provider"] as? String) ?? "gemini").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        current["api_provider"] = kProviderDefaults[newProvider] != nil ? newProvider : "gemini"
+        let resolvedProvider = current["api_provider"] as? String ?? "gemini"
+        let trimmedBase = ((current["api_base_url"] as? String) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        current["api_base_url"] = trimmedBase.hasSuffix("/") ? String(trimmedBase.dropLast()) : trimmedBase
+
+        let newApiKey = (payload["api_key"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let newGemKey = (payload["gemini_api_key"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let effectiveNewKey = !newApiKey.isEmpty ? newApiKey : newGemKey
+
         if let clearKey = payload["clear_api_key"] as? Bool, clearKey {
+            current["api_key"] = ""
             current["gemini_api_key"] = ""
-        } else if let newKey = payload["gemini_api_key"] as? String, !newKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            current["gemini_api_key"] = newKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        } else if !effectiveNewKey.isEmpty {
+            current["api_key"] = effectiveNewKey
+            if resolvedProvider == "gemini" {
+                current["gemini_api_key"] = effectiveNewKey
+            }
+        } else if resolvedProvider != oldProvider {
+            current["api_key"] = resolvedProvider == "gemini" ? ((current["gemini_api_key"] as? String) ?? "") : ""
         }
         if let t = current["theme"] as? String {
             Task { @MainActor [weak self] in self?.applyWindowTheme(t) }

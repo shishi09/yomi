@@ -88,17 +88,29 @@
         .replace(/-flash/i, " Flash")
         .replace(/-pro/i, " Pro");
     }
-    return String(rawLabel || id).replace(/\s*\([^)]*\)/g, "").trim() || id;
+    if (rawLabel) {
+      return String(rawLabel).replace(/^API\s+/i, "").replace(/\s*\([^)]*\)/g, "").trim() || id;
+    }
+    const colon = id.indexOf(":");
+    if (colon > 0) {
+      const prov = id.slice(0, colon);
+      const rest = id.slice(colon + 1).split("/").pop();
+      return `${prov.charAt(0).toUpperCase() + prov.slice(1)} · ${rest}`;
+    }
+    return id;
   }
 
   function modelSupportsVision(model) {
     if (!model) return false;
-    if (model.startsWith("ollama:")) {
-      const low = model.toLowerCase();
+    const low = String(model).toLowerCase();
+    if (low.startsWith("ollama:")) {
       return ["gemma4", "gemma3", "llava", "qwen2.5vl", "qwen3-vl", "minicpm-v", "llama3.2-vision", "vision"].some(
         (tag) => low.includes(tag)
       );
     }
+    if (low.startsWith("deepseek:")) return false;
+    if (low.startsWith("groq:")) return low.includes("llama-4") || low.includes("vision");
+    if (["o1-mini", "deepseek-r1", "deepseek-chat", "deepseek-reasoner"].some((t) => low.includes(t))) return false;
     return true;
   }
 

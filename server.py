@@ -84,11 +84,123 @@ DEFAULT_CONFIG = {
     "mascot": "mochi",
     "engine_mode": "local",
     "default_model": "ollama:gemma4:12b",
+    "api_provider": "gemini",
+    "api_key": "",
+    "api_base_url": "",
+    "api_model": "gemini-3.8-flash",
     "source_lang": "en",
     "target_lang": "fr",
     "vision_mode": "auto",
     "gemini_api_key": "",
     "userscripts_dir": "",
+}
+
+API_PROVIDERS: dict[str, dict] = {
+    "gemini": {
+        "label": "Google Gemini",
+        "protocol": "gemini",
+        "base_url": "https://generativelanguage.googleapis.com/v1beta",
+        "env_vars": ["GEMINI_API_KEY", "YOMI_API_KEY"],
+        "default_model": "gemini-3.8-flash",
+        "models": [
+            {"id": "gemini-3.8-flash", "label": "Gemini 3.8 Flash"},
+            {"id": "gemini-3.5-flash-lite", "label": "Gemini 3.5 Flash-Lite"},
+            {"id": "gemini-3.6-flash", "label": "Gemini 3.6 Flash"},
+        ],
+    },
+    "openai": {
+        "label": "OpenAI",
+        "protocol": "openai_compat",
+        "base_url": "https://api.openai.com/v1",
+        "env_vars": ["OPENAI_API_KEY", "YOMI_API_KEY"],
+        "default_model": "gpt-4.1-mini",
+        "models": [
+            {"id": "gpt-4.1-mini", "label": "GPT-4.1 Mini"},
+            {"id": "gpt-4.1", "label": "GPT-4.1"},
+            {"id": "gpt-4o-mini", "label": "GPT-4o Mini"},
+            {"id": "gpt-4o", "label": "GPT-4o"},
+        ],
+    },
+    "anthropic": {
+        "label": "Anthropic Claude",
+        "protocol": "anthropic",
+        "base_url": "https://api.anthropic.com/v1",
+        "env_vars": ["ANTHROPIC_API_KEY", "YOMI_API_KEY"],
+        "default_model": "claude-sonnet-4-5",
+        "models": [
+            {"id": "claude-sonnet-4-5", "label": "Claude Sonnet 4.5"},
+            {"id": "claude-haiku-4-5", "label": "Claude Haiku 4.5"},
+            {"id": "claude-opus-4-1", "label": "Claude Opus 4.1"},
+        ],
+    },
+    "openrouter": {
+        "label": "OpenRouter",
+        "protocol": "openai_compat",
+        "base_url": "https://openrouter.ai/api/v1",
+        "env_vars": ["OPENROUTER_API_KEY", "YOMI_API_KEY"],
+        "default_model": "google/gemini-2.5-flash",
+        "models": [
+            {"id": "google/gemini-2.5-flash", "label": "Gemini 2.5 Flash"},
+            {"id": "openai/gpt-4.1-mini", "label": "GPT-4.1 Mini"},
+            {"id": "anthropic/claude-sonnet-4", "label": "Claude Sonnet 4"},
+            {"id": "qwen/qwen2.5-vl-72b-instruct", "label": "Qwen 2.5 VL 72B"},
+        ],
+    },
+    "mistral": {
+        "label": "Mistral AI",
+        "protocol": "openai_compat",
+        "base_url": "https://api.mistral.ai/v1",
+        "env_vars": ["MISTRAL_API_KEY", "YOMI_API_KEY"],
+        "default_model": "mistral-medium-latest",
+        "models": [
+            {"id": "mistral-medium-latest", "label": "Mistral Medium"},
+            {"id": "mistral-large-latest", "label": "Mistral Large"},
+            {"id": "pixtral-large-latest", "label": "Pixtral Large (Vision)"},
+            {"id": "mistral-small-latest", "label": "Mistral Small"},
+        ],
+    },
+    "deepseek": {
+        "label": "DeepSeek",
+        "protocol": "openai_compat",
+        "base_url": "https://api.deepseek.com/v1",
+        "env_vars": ["DEEPSEEK_API_KEY", "YOMI_API_KEY"],
+        "default_model": "deepseek-chat",
+        "models": [
+            {"id": "deepseek-chat", "label": "DeepSeek Chat (V3)"},
+            {"id": "deepseek-reasoner", "label": "DeepSeek Reasoner (R1)"},
+        ],
+    },
+    "groq": {
+        "label": "Groq",
+        "protocol": "openai_compat",
+        "base_url": "https://api.groq.com/openai/v1",
+        "env_vars": ["GROQ_API_KEY", "YOMI_API_KEY"],
+        "default_model": "meta-llama/llama-4-scout-17b-16e-instruct",
+        "models": [
+            {"id": "meta-llama/llama-4-scout-17b-16e-instruct", "label": "Llama 4 Scout 17B (Vision)"},
+            {"id": "meta-llama/llama-4-maverick-17b-128e-instruct", "label": "Llama 4 Maverick 17B"},
+            {"id": "llama-3.3-70b-versatile", "label": "Llama 3.3 70B"},
+        ],
+    },
+    "xai": {
+        "label": "xAI (Grok)",
+        "protocol": "openai_compat",
+        "base_url": "https://api.x.ai/v1",
+        "env_vars": ["XAI_API_KEY", "YOMI_API_KEY"],
+        "default_model": "grok-2-vision-latest",
+        "models": [
+            {"id": "grok-2-vision-latest", "label": "Grok 2 Vision"},
+            {"id": "grok-3-mini-fast", "label": "Grok 3 Mini Fast"},
+        ],
+    },
+    "custom": {
+        "label": "Custom (OpenAI-compatible)",
+        "protocol": "openai_compat",
+        "base_url": "",
+        "env_vars": ["YOMI_API_KEY", "OPENAI_API_KEY"],
+        "default_model": "",
+        "models": [],
+    },
 }
 
 CONFIG_LOCK = threading.Lock()
@@ -279,7 +391,14 @@ def _normalize_config(raw: dict) -> dict:
     tgt = str(cfg.get("target_lang") or "fr").strip().lower()
     cfg["target_lang"] = tgt if tgt in TARGET_LANGUAGES else "fr"
     cfg["vision_mode"] = normalize_vision_mode(cfg.get("vision_mode", "auto"))
+    prov = str(cfg.get("api_provider") or "gemini").strip().lower()
+    cfg["api_provider"] = prov if prov in API_PROVIDERS else "gemini"
+    cfg["api_key"] = str(cfg.get("api_key") or "").strip()
     cfg["gemini_api_key"] = str(cfg.get("gemini_api_key") or "").strip()
+    if not cfg["api_key"] and cfg["api_provider"] == "gemini" and cfg["gemini_api_key"]:
+        cfg["api_key"] = cfg["gemini_api_key"]
+    cfg["api_base_url"] = str(cfg.get("api_base_url") or "").strip().rstrip("/")
+    cfg["api_model"] = str(cfg.get("api_model") or API_PROVIDERS[cfg["api_provider"]]["default_model"]).strip()
     cfg["userscripts_dir"] = str(cfg.get("userscripts_dir") or "").strip()
     return cfg
 
@@ -306,11 +425,26 @@ def save_config(updates: dict) -> dict:
                 current = _normalize_config(json.loads(CONFIG_PATH.read_text(encoding="utf-8")))
             except Exception:
                 current = dict(DEFAULT_CONFIG)
+        old_provider = str(current.get("api_provider") or "gemini").strip().lower()
         for key, val in updates.items():
             if key in DEFAULT_CONFIG and val is not None:
-                if key == "gemini_api_key" and isinstance(val, str) and not val.strip() and updates.get("keep_existing_key"):
+                if key in ("gemini_api_key", "api_key") and isinstance(val, str) and not val.strip() and updates.get("keep_existing_key"):
                     continue
                 current[key] = val
+        new_provider = str(current.get("api_provider") or "gemini").strip().lower()
+        if new_provider not in API_PROVIDERS:
+            new_provider = "gemini"
+        current["api_provider"] = new_provider
+        new_key_str = str(updates.get("api_key") or updates.get("gemini_api_key") or "").strip()
+        if updates.get("clear_api_key"):
+            current["api_key"] = ""
+            current["gemini_api_key"] = ""
+        elif new_key_str:
+            current["api_key"] = new_key_str
+            if new_provider == "gemini":
+                current["gemini_api_key"] = new_key_str
+        elif new_provider != old_provider:
+            current["api_key"] = str(current.get("gemini_api_key") or "") if new_provider == "gemini" else ""
         normalized = _normalize_config(current)
         CONFIG_PATH.write_text(json.dumps(normalized, indent=2, ensure_ascii=False), encoding="utf-8")
         try:
@@ -330,9 +464,9 @@ def mask_api_key(key: str) -> str:
 
 
 def public_config(cfg: dict) -> dict:
-    env_key = os.environ.get("GEMINI_API_KEY", "").strip()
-    eff_key = str(cfg.get("gemini_api_key") or env_key).strip()
-    out = {k: v for k, v in cfg.items() if k != "gemini_api_key"}
+    prov = str(cfg.get("api_provider") or "gemini").strip().lower()
+    eff_key = get_api_key(provider=prov, cfg=cfg)
+    out = {k: v for k, v in cfg.items() if k not in ("gemini_api_key", "api_key")}
     out["has_api_key"] = bool(eff_key)
     out["api_key_masked"] = mask_api_key(eff_key)
     out["target_languages"] = TARGET_LANGUAGES
@@ -529,6 +663,40 @@ def should_use_vision(vision_mode: str, model: str, bubbles: list[dict]) -> bool
     return False
 
 
+def format_cloud_model_id(provider: str, raw_model: str) -> str:
+    prov = (provider or "gemini").strip().lower()
+    raw = (raw_model or "").strip()
+    if not raw:
+        raw = str(API_PROVIDERS.get(prov, {}).get("default_model") or "")
+    if not raw:
+        return prov
+    if prov == "gemini":
+        return raw.removeprefix("gemini:")
+    if raw.startswith(f"{prov}:"):
+        return raw
+    return f"{prov}:{raw}"
+
+
+def parse_model_spec(model: str, cfg: dict | None = None) -> tuple[str, str]:
+    """Détermine (fournisseur, identifiant_modèle_brut) depuis un ID modèle."""
+    spec = str(model or "").strip()
+    if spec.startswith("ollama:"):
+        return "ollama", spec.removeprefix("ollama:").strip()
+    if ":" in spec:
+        prefix, rest = spec.split(":", 1)
+        low = prefix.strip().lower()
+        if low in API_PROVIDERS:
+            return low, rest.strip()
+    if spec.lower().startswith("gemini-"):
+        return "gemini", spec
+    eff_cfg = cfg if cfg is not None else load_config()
+    prov = str(eff_cfg.get("api_provider") or "gemini").strip().lower()
+    if prov not in API_PROVIDERS:
+        prov = "gemini"
+    raw = spec or str(eff_cfg.get("api_model") or API_PROVIDERS[prov]["default_model"] or "").strip()
+    return prov, raw
+
+
 def model_supports_vision(model: str) -> bool:
     """Retourne True si le modèle accepte les images (multimodal)."""
     if model.startswith("ollama:"):
@@ -537,11 +705,19 @@ def model_supports_vision(model: str) -> bool:
             tag in low
             for tag in ("gemma4", "gemma3", "llava", "qwen2.5vl", "qwen3-vl", "minicpm-v", "llama3.2-vision", "vision")
         )
+    prov, raw_model = parse_model_spec(model)
+    low_m = raw_model.lower()
+    if prov == "deepseek":
+        return False
+    if prov == "groq":
+        return ("llama-4" in low_m) or ("vision" in low_m)
+    if any(t in low_m for t in ("o1-mini", "deepseek-r1", "deepseek-chat", "deepseek-reasoner")):
+        return False
     return True
 
 
 def build_available_models(ollama_models: list[str] | None = None) -> list[dict]:
-    """Construit la liste dynamique des modèles installés localement + API Gemini."""
+    """Construit la liste dynamique des modèles installés localement + fournisseur API actif."""
     ordered_tags = ["gemma4:12b", "gemma4:e4b", "gemma4:26b", "gemma4:e2b", "gemma4:31b", "gemma3:12b", "gemma3:4b"]
     installed = [str(m).strip() for m in (ollama_models or []) if str(m).strip()]
     seen_ids: set[str] = set()
@@ -566,12 +742,38 @@ def build_available_models(ollama_models: list[str] | None = None) -> list[dict]
     for inst in installed:
         _add_local(inst)
 
+    cfg = load_config()
     if not local_entries:
-        cfg_default = load_config().get("default_model", "")
+        cfg_default = cfg.get("default_model", "")
         if cfg_default.startswith("ollama:"):
             _add_local(cfg_default.removeprefix("ollama:"))
 
-    return [*local_entries, *GEMINI_API_MODELS]
+    prov = str(cfg.get("api_provider") or "gemini").strip().lower()
+    pinfo = API_PROVIDERS.get(prov, API_PROVIDERS["gemini"])
+    cloud_entries: list[dict] = []
+    cloud_seen: set[str] = set()
+
+    def _add_cloud(raw_id: str, nice_label: str | None = None) -> None:
+        if not raw_id:
+            return
+        full_id = format_cloud_model_id(prov, raw_id)
+        if full_id in cloud_seen:
+            return
+        cloud_seen.add(full_id)
+        prefix_lbl = "API Gemini" if prov == "gemini" else f"API {pinfo['label']}"
+        cloud_entries.append({"id": full_id, "label": f"{prefix_lbl} · {nice_label or raw_id}"})
+
+    cfg_api_model = str(cfg.get("api_model") or "").strip()
+    if cfg_api_model:
+        preset_match = next((m["label"] for m in pinfo["models"] if m["id"] == cfg_api_model), None)
+        _add_cloud(cfg_api_model, preset_match)
+    for m in pinfo["models"]:
+        _add_cloud(m["id"], m["label"])
+
+    if not cloud_entries:
+        cloud_entries = list(GEMINI_API_MODELS)
+
+    return [*local_entries, *cloud_entries]
 
 
 def check_ollama_status() -> tuple[bool, list[str]]:
@@ -693,31 +895,158 @@ def load_dotenv(path: Path) -> None:
             os.environ[key] = value
 
 
-def get_api_key() -> str:
-    cfg_key = str(load_config().get("gemini_api_key") or "").strip()
-    if cfg_key:
-        return cfg_key
-    return os.environ.get("GEMINI_API_KEY", "").strip()
+def get_api_key(provider: str | None = None, cfg: dict | None = None) -> str:
+    eff_cfg = cfg if cfg is not None else load_config()
+    active_prov = str(eff_cfg.get("api_provider") or "gemini").strip().lower()
+    prov = (provider or active_prov).strip().lower()
+    if prov not in API_PROVIDERS:
+        prov = active_prov if active_prov in API_PROVIDERS else "gemini"
+
+    if prov == active_prov:
+        cfg_key = str(eff_cfg.get("api_key") or "").strip()
+        if cfg_key:
+            return cfg_key
+    if prov == "gemini":
+        gem_key = str(eff_cfg.get("gemini_api_key") or "").strip()
+        if gem_key:
+            return gem_key
+
+    env_vars = API_PROVIDERS.get(prov, {}).get("env_vars", [])
+    for env_name in env_vars:
+        if env_name == "YOMI_API_KEY" and prov != active_prov:
+            continue
+        val = os.environ.get(env_name, "").strip()
+        if val:
+            return val
+    return ""
 
 
-def test_gemini_api_key(api_key: str) -> tuple[bool, str]:
+def _resolve_provider_base_url(provider: str, base_url: str = "", cfg: dict | None = None) -> str:
+    eff_cfg = cfg if cfg is not None else load_config()
+    raw = (base_url or "").strip()
+    if not raw and provider == str(eff_cfg.get("api_provider") or "gemini").strip().lower():
+        raw = str(eff_cfg.get("api_base_url") or "").strip()
+    if not raw:
+        raw = str(API_PROVIDERS.get(provider, {}).get("base_url") or "").strip()
+    raw = raw.rstrip("/")
+    parsed = urllib.parse.urlparse(raw)
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        raise ValueError(f"URL de base invalide ou manquante pour le fournisseur '{provider}'.")
+    return raw
+
+
+def test_cloud_api_key(
+    provider: str,
+    api_key: str,
+    base_url: str = "",
+    model: str = "",
+) -> tuple[bool, str]:
+    prov = (provider or "gemini").strip().lower()
+    if prov not in API_PROVIDERS:
+        return False, f"Fournisseur inconnu : {prov}"
     key = str(api_key or "").strip()
     if not key:
         return False, "Clé API vide."
-    req = urllib.request.Request(
-        "https://generativelanguage.googleapis.com/v1beta/models?pageSize=1",
-        headers={"x-goog-api-key": key},
-        method="GET",
-    )
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        resolved_base = _resolve_provider_base_url(prov, base_url=base_url)
+    except ValueError as err:
+        return False, str(err)
+
+    pinfo = API_PROVIDERS[prov]
+    proto = pinfo["protocol"]
+    label = pinfo["label"]
+
+    if proto == "gemini":
+        req = urllib.request.Request(
+            f"{resolved_base}/models?pageSize=1",
+            headers={"x-goog-api-key": key},
+            method="GET",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=12) as resp:
+                if 200 <= resp.status < 300:
+                    return True, f"Clé {label} valide."
+                return False, f"Réponse inattendue ({resp.status})."
+        except urllib.error.HTTPError as e:
+            return False, f"Clé refusée ({e.code})."
+        except urllib.error.URLError as e:
+            return False, f"Erreur réseau : {e.reason}"
+
+    if proto == "anthropic":
+        headers = {
+            "x-api-key": key,
+            "anthropic-version": "2023-06-01",
+        }
+        req = urllib.request.Request(f"{resolved_base}/models?limit=1", headers=headers, method="GET")
+        try:
+            with urllib.request.urlopen(req, timeout=12) as resp:
+                if 200 <= resp.status < 300:
+                    return True, f"Clé {label} valide."
+                return False, f"Réponse inattendue ({resp.status})."
+        except urllib.error.HTTPError as e:
+            if e.code in (404, 405):
+                probe_body = {
+                    "model": (model or pinfo["default_model"] or "claude-haiku-4-5").strip(),
+                    "max_tokens": 1,
+                    "messages": [{"role": "user", "content": "hi"}],
+                }
+                probe_req = urllib.request.Request(
+                    f"{resolved_base}/messages",
+                    data=json.dumps(probe_body).encode("utf-8"),
+                    headers={**headers, "Content-Type": "application/json"},
+                    method="POST",
+                )
+                try:
+                    with urllib.request.urlopen(probe_req, timeout=12):
+                        return True, f"Clé {label} valide."
+                except urllib.error.HTTPError as pe:
+                    return False, f"Clé ou modèle refusé ({pe.code})."
+                except urllib.error.URLError as pe:
+                    return False, f"Erreur réseau : {pe.reason}"
+            return False, f"Clé refusée ({e.code})."
+        except urllib.error.URLError as e:
+            return False, f"Erreur réseau : {e.reason}"
+
+    # OpenAI-compatible
+    headers = {"Authorization": f"Bearer {key}"}
+    check_url = f"{resolved_base}/models"
+    if prov == "openrouter":
+        headers["HTTP-Referer"] = "https://github.com/yomi"
+        headers["X-Title"] = "Yomi"
+        check_url = f"{resolved_base}/auth/key"
+    req = urllib.request.Request(check_url, headers=headers, method="GET")
+    try:
+        with urllib.request.urlopen(req, timeout=12) as resp:
             if 200 <= resp.status < 300:
-                return True, "Clé Gemini valide."
+                return True, f"Clé {label} valide."
             return False, f"Réponse inattendue ({resp.status})."
     except urllib.error.HTTPError as e:
+        if e.code in (404, 405):
+            probe_body = {
+                "model": (model or pinfo["default_model"] or "gpt-4o-mini").strip(),
+                "max_tokens": 1,
+                "messages": [{"role": "user", "content": "hi"}],
+            }
+            probe_req = urllib.request.Request(
+                f"{resolved_base}/chat/completions",
+                data=json.dumps(probe_body).encode("utf-8"),
+                headers={**headers, "Content-Type": "application/json"},
+                method="POST",
+            )
+            try:
+                with urllib.request.urlopen(probe_req, timeout=12):
+                    return True, f"Clé {label} valide."
+            except urllib.error.HTTPError as pe:
+                return False, f"Clé ou modèle refusé ({pe.code})."
+            except urllib.error.URLError as pe:
+                return False, f"Erreur réseau : {pe.reason}"
         return False, f"Clé refusée ({e.code})."
     except urllib.error.URLError as e:
         return False, f"Erreur réseau : {e.reason}"
+
+
+def test_gemini_api_key(api_key: str) -> tuple[bool, str]:
+    return test_cloud_api_key("gemini", api_key)
 
 
 def _ollama_has_model(installed: list[str], model_tag: str) -> bool:
@@ -737,10 +1066,18 @@ def get_default_model(
     if ollama_ok is None or ollama_models is None:
         ollama_ok, ollama_models = check_ollama_status()
 
+    prov = str(cfg.get("api_provider") or "gemini").strip().lower()
+    api_model = str(cfg.get("api_model") or API_PROVIDERS.get(prov, {}).get("default_model") or "").strip()
+    has_key = bool(get_api_key(provider=prov, cfg=cfg))
+
+    if cfg.get("engine_mode") == "api" and has_key:
+        if cfg_model and not cfg_model.startswith("ollama:"):
+            return cfg_model
+        return format_cloud_model_id(prov, api_model)
+
     if cfg_model:
-        if not cfg_model.startswith("ollama:") and (cfg.get("engine_mode") == "api" or not ollama_ok):
-            if get_api_key():
-                return cfg_model
+        if not cfg_model.startswith("ollama:") and not ollama_ok and has_key:
+            return cfg_model
         elif cfg_model.startswith("ollama:") and ollama_ok:
             tag = cfg_model.removeprefix("ollama:")
             if _ollama_has_model(ollama_models, tag):
@@ -752,8 +1089,8 @@ def get_default_model(
                 return f"ollama:{candidate}"
         if ollama_models:
             return f"ollama:{ollama_models[0]}"
-    if get_api_key():
-        return os.environ.get("GEMINI_MODEL", "gemini-3.8-flash").strip() or "gemini-3.8-flash"
+    if has_key:
+        return format_cloud_model_id(prov, api_model)
     return cfg_model or "ollama:gemma4:12b"
 
 
@@ -1720,6 +2057,254 @@ def translate_bubbles_with_ollama(
     return translations
 
 
+def _parse_retry_after_seconds(headers, err_body: str) -> int:
+    if headers is not None:
+        raw_hdr = str(headers.get("Retry-After") or "").strip()
+        if raw_hdr:
+            try:
+                return max(5, min(90, int(float(raw_hdr)) + 1))
+            except ValueError:
+                pass
+    m = re.search(r"retry\s+(?:in|after)\s+(\d+(?:\.\d+)?)\s*s", err_body, re.IGNORECASE)
+    if not m:
+        m = re.search(r'"retryDelay"\s*:\s*"(\d+(?:\.\d+)?)s"', err_body)
+    if m:
+        return max(5, min(90, int(float(m.group(1))) + 2))
+    return 15
+
+
+def translate_bubbles_with_openai_compat(
+    bubbles: list[dict],
+    provider: str,
+    model_id: str,
+    api_key: str,
+    base_url: str,
+    source_lang: str = "en",
+    target_lang: str = "fr",
+    context_history: list[str] | None = None,
+    som_image_b64: str | None = None,
+    glossary: dict | None = None,
+) -> dict[int, dict]:
+    """Traduit les bulles via n'importe quel fournisseur compatible OpenAI (/chat/completions)."""
+    if not bubbles:
+        return {}
+
+    pinfo = API_PROVIDERS.get(provider, API_PROVIDERS["custom"])
+    label = pinfo["label"]
+    use_vision = bool(som_image_b64 and model_supports_vision(f"{provider}:{model_id}"))
+    include_rf = True
+
+    def _build_body(with_rf: bool, with_img: bool) -> dict:
+        sys_prompt = build_manga_system_prompt(
+            source_lang, use_vision=with_img, glossary=glossary, target_lang=target_lang
+        )
+        items = [{"id": b["id"], "text": b["text"]} for b in bubbles]
+        u_text = build_user_prompt(
+            items, context_history=context_history, use_vision=with_img, target_lang=target_lang
+        )
+        if with_img and som_image_b64:
+            user_content: object = [
+                {"type": "text", "text": u_text},
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{som_image_b64}"}},
+            ]
+        else:
+            user_content = u_text
+        body: dict = {
+            "model": model_id,
+            "temperature": 0.45,
+            "messages": [
+                {"role": "system", "content": sys_prompt},
+                {"role": "user", "content": user_content},
+            ],
+        }
+        if with_rf:
+            body["response_format"] = {"type": "json_object"}
+        return body
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}",
+    }
+    if provider == "openrouter":
+        headers["HTTP-Referer"] = "https://github.com/yomi"
+        headers["X-Title"] = "Yomi"
+
+    url = f"{base_url.rstrip('/')}/chat/completions"
+    raw = None
+    for _attempt in range(3):
+        body = _build_body(include_rf, use_vision)
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(body).encode("utf-8"),
+            headers=headers,
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                raw = json.loads(resp.read().decode("utf-8"))
+            break
+        except urllib.error.HTTPError as e:
+            err_body = ""
+            try:
+                err_body = e.read().decode("utf-8", errors="replace")
+            except Exception:
+                pass
+            low_err = err_body.lower()
+            if e.code in (400, 422):
+                if include_rf and any(k in low_err for k in ("response_format", "json_object", "structured", "json mode")):
+                    include_rf = False
+                    continue
+                if use_vision and any(k in low_err for k in ("image", "vision", "multimodal", "image_url", "content[1]")):
+                    use_vision = False
+                    continue
+            if e.code == 429:
+                retry_after = _parse_retry_after_seconds(e.headers, err_body)
+                raise RateLimitError(
+                    f"Limite de requêtes (429) sur {label} ({model_id}, reprise dans {retry_after}s).",
+                    retry_after=retry_after,
+                    is_daily="perday" in low_err or "daily" in low_err,
+                )
+            if e.code in (401, 403):
+                raise RuntimeError(f"Clé API {label} invalide ou non autorisée ({e.code}) : {err_body[:240]}")
+            if e.code == 404:
+                raise RuntimeError(f"Modèle '{model_id}' ou endpoint introuvable sur {label} (404).")
+            raise RuntimeError(f"Erreur API {label} ({e.code}) : {err_body[:260]}")
+        except urllib.error.URLError as e:
+            raise RuntimeError(f"Impossible de joindre l'API {label} : {e.reason}")
+
+    if not isinstance(raw, dict):
+        raise RuntimeError(f"Réponse invalide de {label}.")
+
+    choices = raw.get("choices") or []
+    if not choices:
+        raise RuntimeError(f"Réponse {label} vide (aucun choix retourné).")
+
+    msg_content = (choices[0].get("message") or {}).get("content", "")
+    if isinstance(msg_content, list):
+        text_out = "".join(
+            str(part.get("text", "")) for part in msg_content if isinstance(part, dict)
+        ).strip()
+    else:
+        text_out = str(msg_content or "").strip()
+
+    if not text_out:
+        raise RuntimeError(f"{label} n'a renvoyé aucun texte.")
+
+    text_out = re.sub(r"^```(?:json)?\s*|\s*```$", "", text_out, flags=re.DOTALL).strip()
+    parsed = extract_json_object(text_out)
+    return _parse_translation_items(
+        parsed.get("translations") if isinstance(parsed, dict) else None
+    )
+
+
+def translate_bubbles_with_anthropic(
+    bubbles: list[dict],
+    model_id: str,
+    api_key: str,
+    base_url: str,
+    source_lang: str = "en",
+    target_lang: str = "fr",
+    context_history: list[str] | None = None,
+    som_image_b64: str | None = None,
+    glossary: dict | None = None,
+) -> dict[int, dict]:
+    """Traduit les bulles via l'API native Anthropic Claude (/v1/messages)."""
+    if not bubbles:
+        return {}
+
+    use_vision = bool(som_image_b64 and model_supports_vision(f"anthropic:{model_id}"))
+
+    def _build_body(with_img: bool) -> dict:
+        sys_prompt = build_manga_system_prompt(
+            source_lang, use_vision=with_img, glossary=glossary, target_lang=target_lang
+        )
+        items = [{"id": b["id"], "text": b["text"]} for b in bubbles]
+        u_text = build_user_prompt(
+            items, context_history=context_history, use_vision=with_img, target_lang=target_lang
+        )
+        blocks: list[dict] = []
+        if with_img and som_image_b64:
+            blocks.append(
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": "image/jpeg",
+                        "data": som_image_b64,
+                    },
+                }
+            )
+        blocks.append({"type": "text", "text": u_text})
+        return {
+            "model": model_id,
+            "max_tokens": 4096,
+            "temperature": 0.45,
+            "system": sys_prompt,
+            "messages": [{"role": "user", "content": blocks}],
+        }
+
+    url = f"{base_url.rstrip('/')}/messages"
+    headers = {
+        "Content-Type": "application/json",
+        "x-api-key": api_key,
+        "anthropic-version": "2023-06-01",
+    }
+
+    raw = None
+    for _attempt in range(2):
+        body = _build_body(use_vision)
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(body).encode("utf-8"),
+            headers=headers,
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                raw = json.loads(resp.read().decode("utf-8"))
+            break
+        except urllib.error.HTTPError as e:
+            err_body = ""
+            try:
+                err_body = e.read().decode("utf-8", errors="replace")
+            except Exception:
+                pass
+            low_err = err_body.lower()
+            if e.code == 400 and use_vision and any(k in low_err for k in ("image", "vision", "media_type")):
+                use_vision = False
+                continue
+            if e.code == 429:
+                retry_after = _parse_retry_after_seconds(e.headers, err_body)
+                raise RateLimitError(
+                    f"Limite de requêtes (429) sur Anthropic ({model_id}, reprise dans {retry_after}s).",
+                    retry_after=retry_after,
+                    is_daily=False,
+                )
+            if e.code in (401, 403):
+                raise RuntimeError(f"Clé API Anthropic invalide ou non autorisée ({e.code}) : {err_body[:240]}")
+            if e.code == 404:
+                raise RuntimeError(f"Modèle '{model_id}' introuvable sur Anthropic (404).")
+            raise RuntimeError(f"Erreur API Anthropic ({e.code}) : {err_body[:260]}")
+        except urllib.error.URLError as e:
+            raise RuntimeError(f"Impossible de joindre l'API Anthropic : {e.reason}")
+
+    if not isinstance(raw, dict):
+        raise RuntimeError("Réponse Anthropic invalide.")
+
+    blocks = raw.get("content") or []
+    text_out = "".join(
+        str(b.get("text", "")) for b in blocks if isinstance(b, dict) and b.get("type") == "text"
+    ).strip()
+    if not text_out:
+        raise RuntimeError("Anthropic n'a renvoyé aucun texte.")
+
+    text_out = re.sub(r"^```(?:json)?\s*|\s*```$", "", text_out, flags=re.DOTALL).strip()
+    parsed = extract_json_object(text_out)
+    return _parse_translation_items(
+        parsed.get("translations") if isinstance(parsed, dict) else None
+    )
+
+
 def translate_bubbles_with_gemini(
     bubbles: list[dict],
     model: str,
@@ -1729,11 +2314,14 @@ def translate_bubbles_with_gemini(
     som_image_b64: str | None = None,
     glossary: dict | None = None,
 ) -> dict[int, dict]:
-    """Traduit toutes les bulles d'une planche (Ollama local ou API Gemini)."""
-    if model.startswith("ollama:"):
+    """Traduit toutes les bulles d'une planche (Ollama local ou n'importe quelle API Cloud)."""
+    cfg = load_config()
+    provider, raw_model = parse_model_spec(model, cfg=cfg)
+
+    if provider == "ollama":
         return translate_bubbles_with_ollama(
             bubbles,
-            model=model,
+            model=f"ollama:{raw_model}",
             source_lang=source_lang,
             target_lang=target_lang,
             context_history=context_history,
@@ -1741,15 +2329,47 @@ def translate_bubbles_with_gemini(
             glossary=glossary,
         )
 
-    api_key = get_api_key()
-    if not api_key:
-        raise ValueError(
-            "Clé API manquante : choisis 'Local · Gemma 4 12B (Vision + Top Qualité)' ou ajoute GEMINI_API_KEY dans .env."
-        )
-
     if not bubbles:
         return {}
 
+    api_key = get_api_key(provider=provider, cfg=cfg)
+    pinfo = API_PROVIDERS.get(provider, API_PROVIDERS["gemini"])
+    if not api_key:
+        raise ValueError(
+            f"Clé API manquante pour {pinfo['label']} : configure-la dans Yomi (Paramètres → Moteur & Modèles) ou choisis Ollama local."
+        )
+
+    base_url = _resolve_provider_base_url(provider, cfg=cfg)
+    proto = pinfo["protocol"]
+
+    if proto == "anthropic":
+        return translate_bubbles_with_anthropic(
+            bubbles,
+            model_id=raw_model,
+            api_key=api_key,
+            base_url=base_url,
+            source_lang=source_lang,
+            target_lang=target_lang,
+            context_history=context_history,
+            som_image_b64=som_image_b64,
+            glossary=glossary,
+        )
+
+    if proto == "openai_compat":
+        return translate_bubbles_with_openai_compat(
+            bubbles,
+            provider=provider,
+            model_id=raw_model,
+            api_key=api_key,
+            base_url=base_url,
+            source_lang=source_lang,
+            target_lang=target_lang,
+            context_history=context_history,
+            som_image_b64=som_image_b64,
+            glossary=glossary,
+        )
+
+    model = raw_model
     use_vision = bool(som_image_b64 and model_supports_vision(model))
     system_prompt = build_manga_system_prompt(
         source_lang, use_vision=use_vision, glossary=glossary, target_lang=target_lang
@@ -1797,7 +2417,7 @@ def translate_bubbles_with_gemini(
     }
 
     safe_model = urllib.parse.quote(model, safe="-._")
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{safe_model}:generateContent"
+    url = f"{base_url.rstrip('/')}/models/{safe_model}:generateContent"
     req = urllib.request.Request(
         url,
         data=json.dumps(body).encode("utf-8"),
@@ -2338,15 +2958,20 @@ class MangaTranslatorHandler(BaseHTTPRequestHandler):
 
         if path == "/api/health":
             cfg = load_config()
+            prov = str(cfg.get("api_provider") or "gemini").strip().lower()
+            pinfo = API_PROVIDERS.get(prov, API_PROVIDERS["gemini"])
             ollama_ok, ollama_models = check_ollama_status()
             models_list = build_available_models(ollama_models)
             default_model = get_default_model(ollama_ok=ollama_ok, ollama_models=ollama_models)
+            has_key = bool(get_api_key(provider=prov, cfg=cfg))
             self._send_json(
                 200,
                 {
                     "ok": True,
-                    "api_key_configured": ollama_ok or bool(get_api_key()),
-                    "has_api_key": bool(get_api_key()),
+                    "api_key_configured": ollama_ok or has_key,
+                    "has_api_key": has_key,
+                    "api_provider": prov,
+                    "api_provider_label": pinfo["label"],
                     "ollama_ready": ollama_ok,
                     "ollama_models": ollama_models,
                     "default_model": default_model,
@@ -2722,6 +3347,7 @@ class MangaTranslatorHandler(BaseHTTPRequestHandler):
             "/api/glossaries/delete",
             "/api/config",
             "/api/test-gemini-key",
+            "/api/test-api-key",
         ):
             self._send_json(404, {"error": "Endpoint inconnu"})
             return
@@ -2739,9 +3365,13 @@ class MangaTranslatorHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {"ok": True, "config": public_config(saved_cfg)})
                 return
 
-            if path == "/api/test-gemini-key":
-                test_key = str(data.get("gemini_api_key") or "").strip() or get_api_key()
-                ok, msg = test_gemini_api_key(test_key)
+            if path in ("/api/test-gemini-key", "/api/test-api-key"):
+                cfg = load_config()
+                prov = str(data.get("provider") or cfg.get("api_provider") or "gemini").strip().lower()
+                test_key = str(data.get("api_key") or data.get("gemini_api_key") or "").strip() or get_api_key(provider=prov, cfg=cfg)
+                base_url = str(data.get("base_url") or cfg.get("api_base_url") or "").strip()
+                test_model = str(data.get("model") or cfg.get("api_model") or "").strip()
+                ok, msg = test_cloud_api_key(prov, test_key, base_url=base_url, model=test_model)
                 self._send_json(200, {"ok": ok, "message": msg, "error": "" if ok else msg})
                 return
 
@@ -2900,7 +3530,7 @@ def main() -> None:
     else:
         print("  Ollama local  : Inactif (lance 'ollama serve')")
     if get_api_key():
-        print("  Clé Gemini    : Configurée (secours API)")
+        print("  API Cloud     : Clé configurée", flush=True)
     threading.Thread(target=prune_disk_cache, daemon=True).start()
     print("  Ctrl+C pour arrêter.")
     print("=" * 56, flush=True)
